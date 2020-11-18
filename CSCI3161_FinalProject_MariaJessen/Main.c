@@ -20,7 +20,7 @@ GLboolean isFullscreen = GL_FALSE;
 
 void setMaterialProperties(GLfloat diffuse[4], GLfloat ambient[4]) {
 	GLfloat specularMat[] = { 1.0, 1.0, 1.0, 1.0 }; // neutral specular highlight will reflect color of light source
-	GLfloat shine = 100.0; // no a vector, just one val
+	GLfloat shine = 200.0;
 	glMaterialfv(GL_FRONT, GL_AMBIENT, ambient);
 	glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse);
 	glMaterialfv(GL_FRONT, GL_SPECULAR, specularMat);
@@ -28,7 +28,7 @@ void setMaterialProperties(GLfloat diffuse[4], GLfloat ambient[4]) {
 }
 
 void setPartColor(int partIndex) {
-	GLfloat ambientColor[] = { 0.0, 0.0, 0.0, 1.0 };
+	GLfloat ambientColor[] = { 0.1, 0.1, 0.1, 1.0 };
 
 	if (partIndex <= 3) {
 		setMaterialProperties(color_array_yellow, ambientColor);
@@ -53,9 +53,9 @@ void setPartColor(int partIndex) {
 	}
 }
 
-void loadPlanePoints() {
+void loadPlanePoints(char filename[], struct Point* points, struct FaceNode* faces[], int maxVerticesRead) {
 	FILE* planeFile;
-	errno_t result = fopen_s(&planeFile, "cessna.txt", "r");
+	errno_t result = fopen_s(&planeFile, filename, "r");
 
 	if (planeFile == 0) return;
 
@@ -73,9 +73,9 @@ void loadPlanePoints() {
 			fscanf_s(planeFile, "%f %f %f\n", &xPos, &yPos, &zPos);
 			struct Point newPoint = { .vertex_x=xPos, .vertex_y=yPos, .vertex_z=zPos, .normal_x=0.0, .normal_y=0.0, .normal_z=0.0 }; // create a point structure from the coordinates
 
-			planePoints[pointCount] = newPoint;
+			points[pointCount] = newPoint;
 
-			if (pointCount == CESSNA_POINT_COUNT) {
+			if (pointCount == maxVerticesRead) {
 				pointCount = 1;
 			}
 			else {
@@ -86,9 +86,9 @@ void loadPlanePoints() {
 			GLfloat xPos, yPos, zPos;
 			fscanf_s(planeFile, "%f %f %f\n", &xPos, &yPos, &zPos);
 
-			planePoints[pointCount].normal_x = xPos;
-			planePoints[pointCount].normal_y = yPos;
-			planePoints[pointCount].normal_z = zPos;
+			points[pointCount].normal_x = xPos;
+			points[pointCount].normal_y = yPos;
+			points[pointCount].normal_z = zPos;
 
 			pointCount++;
 		}
@@ -108,7 +108,7 @@ void loadPlanePoints() {
 
 			while (scanned != 0 && scanned != EOF) {
 				//printf("%d ", pointIndex);
-				struct Point point = planePoints[pointIndex];
+				struct Point point = points[pointIndex];
 
 				// create a new PointNode from that Point, insert it into the list 
 				list = insertPoint(list, point);
@@ -126,36 +126,52 @@ void loadPlanePoints() {
 		//printf("NEXT CHAR: %c\n", typeChar);
 		linesRead++;
 		typeCharScanned = fscanf_s(planeFile, "%c ", &typeChar, 2);
-		//printf("NEXT CHAR: %c RESULT: %d LINES READ: %d\n", typeChar, typeCharScanned, linesRead);
 	}
+}
+
+void drawVertexWithNormal(struct PointNode* currPoint) {
+	glBegin(GL_POLYGON);
+
+	while (currPoint != NULL) {
+		struct Point point = currPoint->point;
+
+		glNormal3f(point.normal_x, point.normal_y, point.normal_z);
+		glVertex3f(point.vertex_x, point.vertex_y, point.vertex_z);
+
+		currPoint = currPoint->next;
+	}
+
+	glEnd();
 }
 
 void drawCessna() {
 	int i = 0;
 	
 	for (i = 0; i < 33; i++) {
-		struct FaceNode* currFace = faces[i];
+		struct FaceNode* currFace = planeFaceLists[i];
 
 		while (currFace != NULL) {
 			struct PointNode* currPoint = currFace->pointList;
 
-			glBegin(GL_POLYGON);
 			setPartColor(i);
 
-			while (currPoint != NULL) {
-				struct Point point = currPoint->point;
-
-				glNormal3f(point.normal_x, point.normal_y, point.normal_z);
-				glVertex3f(point.vertex_x, point.vertex_y, point.vertex_z);
-				
-				currPoint = currPoint->next;
-			}
-			glEnd();
+			drawVertexWithNormal(currPoint);
 
 			currFace = currFace->next;
 		}
 	}
 }
+
+/*
+void drawPropellers() {
+	struct FaceNode* currFace = propellerFaces;
+
+	while (currFace != NULL) {
+		struct PointNode* currPoint = currFace->pointList;
+
+		glBegin
+	}
+}*/
 
 /// <summary>
 /// Draws a 3D sphere at the origin with the specified color and radius. Reused from my Assignment 2 code. 
@@ -317,7 +333,7 @@ void initializeGL() {
 }
 
 void main(int argc, char** argv) {
-	loadPlanePoints();
+	loadPlanePoints("cessna.txt", &planePoints[0], planeFaceLists, CESSNA_POINT_COUNT);
 
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
