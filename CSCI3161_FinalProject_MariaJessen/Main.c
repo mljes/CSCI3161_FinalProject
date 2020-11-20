@@ -122,22 +122,12 @@ void loadPlanePoints(char filename[], struct Point* points, struct FaceNode* fac
 				struct Point point = points[pointIndex];
 
 				if (partCount == 32) { // hub1 (left)
-					leftHubLowestCoords[0] = point.vertex_x <= leftHubLowestCoords[0] ? point.vertex_x : leftHubLowestCoords[0];
-					leftHubLowestCoords[1] = point.vertex_y <= leftHubLowestCoords[1] ? point.vertex_y : leftHubLowestCoords[1];
-					leftHubLowestCoords[2] = point.vertex_z <= leftHubLowestCoords[2] ? point.vertex_z : leftHubLowestCoords[2];
-
-					leftHubHighestCoords[0] = point.vertex_x >= leftHubHighestCoords[0] ? point.vertex_x : leftHubHighestCoords[0];
-					leftHubHighestCoords[1] = point.vertex_y >= leftHubHighestCoords[1] ? point.vertex_y : leftHubHighestCoords[1];
-					leftHubHighestCoords[2] = point.vertex_z >= leftHubHighestCoords[2] ? point.vertex_z : leftHubHighestCoords[2];
+					getLowestCoordinates(point, leftHubLowestCoords);
+					getHighestCoordinates(point, leftHubHighestCoords);
 				}
 				if (partCount == 23) { // hub2 (right)
-					rightHubLowestCoords[0] = point.vertex_x <= rightHubLowestCoords[0] ? point.vertex_x : rightHubLowestCoords[0];
-					rightHubLowestCoords[1] = point.vertex_y <= rightHubLowestCoords[1] ? point.vertex_y : rightHubLowestCoords[1];
-					rightHubLowestCoords[2] = point.vertex_z <= rightHubLowestCoords[2] ? point.vertex_z : rightHubLowestCoords[2];
-
-					rightHubHighestCoords[0] = point.vertex_x >= rightHubHighestCoords[0] ? point.vertex_x : rightHubHighestCoords[0];
-					rightHubHighestCoords[1] = point.vertex_y >= rightHubHighestCoords[1] ? point.vertex_y : rightHubHighestCoords[1];
-					rightHubHighestCoords[2] = point.vertex_z >= rightHubHighestCoords[2] ? point.vertex_z : rightHubHighestCoords[2];
+					getLowestCoordinates(point, rightHubLowestCoords);
+					getHighestCoordinates(point, rightHubHighestCoords);
 				}
 
 				// create a new PointNode from that Point, insert it into the list 
@@ -330,21 +320,15 @@ void myDisplay() {
 	drawPropeller(GL_TRUE);
 	glPopMatrix();
 
-	setMaterialProperties(color_array_red, color_array_red);
-	glBegin(GL_LINES);
-	glVertex3f(leftPropellerToOrigin[0], leftPropellerToOrigin[1], leftPropellerToOrigin[2]);
-	glVertex3f(leftPropellerToOrigin[0], leftPropellerToOrigin[1], leftPropellerToOrigin[2] + 1.0);
-
-	glVertex3f(leftPropellerToOrigin[0], leftPropellerToOrigin[1], leftPropellerToOrigin[2]);
-	glVertex3f(leftPropellerToOrigin[0], leftPropellerToOrigin[1], leftPropellerToOrigin[2] - 1.0);
-
-	glVertex3f(leftPropellerToOrigin[0], leftPropellerToOrigin[1], leftPropellerToOrigin[2]);
-	glVertex3f(leftPropellerToOrigin[0], leftPropellerToOrigin[1] + 1.0, leftPropellerToOrigin[2]);
-
-	glVertex3f(leftPropellerToOrigin[0], leftPropellerToOrigin[1], leftPropellerToOrigin[2]);
-	glVertex3f(leftPropellerToOrigin[0], leftPropellerToOrigin[1] - 1.0, leftPropellerToOrigin[2]);
-	glEnd();
-
+	/*
+	glPushMatrix();
+	glTranslatef(-rightPropellerToOrigin[0], -rightPropellerToOrigin[1], -rightPropellerToOrigin[2]);
+	glTranslatef(-rightPropellerToOrigin[0], -rightPropellerToOrigin[1], -rightPropellerToOrigin[2]);
+	glRotatef(propellerRotationDeg, 1.0, 0.0, 0.0);
+	glTranslatef(leftPropellerToOrigin[0], leftPropellerToOrigin[1], leftPropellerToOrigin[2]);
+	drawPropeller(GL_TRUE);
+	glPopMatrix();
+	*/
 	glPopMatrix();
 
 	glutSwapBuffers(); // send drawing information to OpenGL
@@ -405,19 +389,8 @@ void main(int argc, char** argv) {
 	loadPlanePoints("cessna.txt", &planePoints[0], planeFaceLists, CESSNA_POINT_COUNT);
 	loadPlanePoints("propeller.txt", &leftPropellerPoints[0], leftPropellerFaces, PROPELLER_POINT_COUNT);
 
-	printf("LEFT HIGHEST: X: %f, Y: %f, Z: %f\n", leftHubHighestCoords[0], leftHubHighestCoords[1], leftHubHighestCoords[2]);
-	printf("LEFT LOWEST: X: %f, Y: %f, Z: %f\n", leftHubLowestCoords[0], leftHubLowestCoords[1], leftHubLowestCoords[2]);
-
-	int i;
-	for (i = 0; i < 3; i++) {
-		leftPropellerToOrigin[i] = -((GLfloat)leftHubHighestCoords[i] + (GLfloat)leftHubLowestCoords[i]) / 2.0;
-	}
-
-	printf("LEFT TO ORIGIN: X: %f, Y: %f, Z: %f\n",
-		leftPropellerToOrigin[0],
-		leftPropellerToOrigin[1],
-		leftPropellerToOrigin[2]
-	);
+	setLeftPropellerOffsets();
+	setRightPropellerOffsets();
 
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
