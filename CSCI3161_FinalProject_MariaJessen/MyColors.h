@@ -5,6 +5,7 @@
 #define COLOR_BLUE { 0.0, 0.0, 1.0, 1.0 }
 #define COLOR_RED { 1.0, 0.0, 0.0, 1.0 }
 #define COLOR_GREEN { 0.0, 1.0, 0.0, 1.0 } 
+#define COLOR_WHITE { 1.0, 1.0, 1.0, 1.0 }
 
 GLfloat color_array_yellow[4] = COLOR_YELLOW;
 GLfloat color_array_black[4] = COLOR_BLACK;

@@ -18,9 +18,13 @@ const GLfloat gridSectionWidth = 2.0;
 
 GLboolean isFullscreen = GL_FALSE;
 
+GLfloat propellerRotationDeg = 10.0;
+
+int specialPart = 1;
+
 void setMaterialProperties(GLfloat diffuse[4], GLfloat ambient[4]) {
 	GLfloat specularMat[] = { 1.0, 1.0, 1.0, 1.0 }; // neutral specular highlight will reflect color of light source
-	GLfloat shine = 200.0;
+	GLfloat shine = 50.0;
 	glMaterialfv(GL_FRONT, GL_AMBIENT, ambient);
 	glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse);
 	glMaterialfv(GL_FRONT, GL_SPECULAR, specularMat);
@@ -29,6 +33,11 @@ void setMaterialProperties(GLfloat diffuse[4], GLfloat ambient[4]) {
 
 void setPartColor(int partIndex) {
 	GLfloat ambientColor[] = { 0.1, 0.1, 0.1, 1.0 };
+
+	if (partIndex == specialPart) {
+		setMaterialProperties(color_array_red, ambientColor);
+		return;
+	}
 
 	if (partIndex <= 3) {
 		setMaterialProperties(color_array_yellow, ambientColor);
@@ -95,9 +104,11 @@ void loadPlanePoints(char filename[], struct Point* points, struct FaceNode* fac
 		else if (typeChar == 'g') {
 			char partName[20];
 			fgets(&partName, 19, planeFile);
-			printf("LOADING %s\n", partName);
 
 			partCount++;
+
+			printf("(%d) LOADING %s\n", partCount, partName);
+
 			faces[partCount] = NULL; //malloc(sizeof(struct FaceNode));
 		}
 		else if (typeChar == 'f') {
@@ -109,6 +120,25 @@ void loadPlanePoints(char filename[], struct Point* points, struct FaceNode* fac
 			while (scanned != 0 && scanned != EOF) {
 				//printf("%d ", pointIndex);
 				struct Point point = points[pointIndex];
+
+				if (partCount == 32) { // hub1 (left)
+					leftHubLowestCoords[0] = point.vertex_x <= leftHubLowestCoords[0] ? point.vertex_x : leftHubLowestCoords[0];
+					leftHubLowestCoords[1] = point.vertex_y <= leftHubLowestCoords[1] ? point.vertex_y : leftHubLowestCoords[1];
+					leftHubLowestCoords[2] = point.vertex_z <= leftHubLowestCoords[2] ? point.vertex_z : leftHubLowestCoords[2];
+
+					leftHubHighestCoords[0] = point.vertex_x >= leftHubHighestCoords[0] ? point.vertex_x : leftHubHighestCoords[0];
+					leftHubHighestCoords[1] = point.vertex_y >= leftHubHighestCoords[1] ? point.vertex_y : leftHubHighestCoords[1];
+					leftHubHighestCoords[2] = point.vertex_z >= leftHubHighestCoords[2] ? point.vertex_z : leftHubHighestCoords[2];
+				}
+				if (partCount == 23) { // hub2 (right)
+					rightHubLowestCoords[0] = point.vertex_x <= rightHubLowestCoords[0] ? point.vertex_x : rightHubLowestCoords[0];
+					rightHubLowestCoords[1] = point.vertex_y <= rightHubLowestCoords[1] ? point.vertex_y : rightHubLowestCoords[1];
+					rightHubLowestCoords[2] = point.vertex_z <= rightHubLowestCoords[2] ? point.vertex_z : rightHubLowestCoords[2];
+
+					rightHubHighestCoords[0] = point.vertex_x >= rightHubHighestCoords[0] ? point.vertex_x : rightHubHighestCoords[0];
+					rightHubHighestCoords[1] = point.vertex_y >= rightHubHighestCoords[1] ? point.vertex_y : rightHubHighestCoords[1];
+					rightHubHighestCoords[2] = point.vertex_z >= rightHubHighestCoords[2] ? point.vertex_z : rightHubHighestCoords[2];
+				}
 
 				// create a new PointNode from that Point, insert it into the list 
 				list = insertPoint(list, point);
@@ -131,7 +161,6 @@ void loadPlanePoints(char filename[], struct Point* points, struct FaceNode* fac
 
 void drawVertexWithNormal(struct PointNode* currPoint) {
 	glBegin(GL_POLYGON);
-
 	while (currPoint != NULL) {
 		struct Point point = currPoint->point;
 
@@ -140,7 +169,6 @@ void drawVertexWithNormal(struct PointNode* currPoint) {
 
 		currPoint = currPoint->next;
 	}
-
 	glEnd();
 }
 
@@ -154,7 +182,6 @@ void drawCessna() {
 			struct PointNode* currPoint = currFace->pointList;
 
 			setPartColor(i);
-
 			drawVertexWithNormal(currPoint);
 
 			currFace = currFace->next;
@@ -162,16 +189,28 @@ void drawCessna() {
 	}
 }
 
-/*
-void drawPropellers() {
-	struct FaceNode* currFace = propellerFaces;
+void drawPropeller(GLboolean isLeft) {
+	// get correct set of propeller faces to draw
+	GLfloat colors[2][4] = {
+		COLOR_WHITE,
+		COLOR_RED
+	};
 
-	while (currFace != NULL) {
-		struct PointNode* currPoint = currFace->pointList;
+	int i;
+	for (i = 0; i < 2; i++) {
+		struct FaceNode* currFace = isLeft ? leftPropellerFaces[i] : rightPropellerFaces[i];
 
-		glBegin
+		while (currFace != NULL) {
+			struct PointNode* currPoint = currFace->pointList;
+
+			setMaterialProperties(colors[i], colors[i]);
+			drawVertexWithNormal(currPoint);
+
+			currFace = currFace->next;
+		}
 	}
-}*/
+	
+}
 
 /// <summary>
 /// Draws a 3D sphere at the origin with the specified color and radius. Reused from my Assignment 2 code. 
@@ -220,26 +259,26 @@ void drawAxes() {
 	//glColor3f(1.0, 0.0, 0.0);
 	setMaterialProperties(color_array_red, color_array_red);
 	glVertex3f(0.0, 0.0, 0.0);
-	glVertex3f(5.0, 0.0, 0.0);
+	glVertex3f(20.0, 0.0, 0.0);
 
 	// +y axis
 	//glColor3f(0.0, 1.0, 0.0);
 	setMaterialProperties(color_array_green, color_array_green);
 	glVertex3f(0.0, 0.0, 0.0);
-	glVertex3f(0.0, 5.0, 0.0);
+	glVertex3f(0.0, 20.0, 0.0);
 
 	// +z axis
 	//glColor3f(0.0, 0.0, 1.0);
 	setMaterialProperties(color_array_blue, color_array_blue);
 	glVertex3f(0.0, 0.0, 0.0);
-	glVertex3f(0.0, 0.0, 5.0);
+	glVertex3f(0.0, 0.0, 40.0);
 
 	glEnd();
 
 	glLineWidth(1.0); // reset line width
 
 	GLfloat sphereColor[] = { 1.0, 1.0, 1.0, 1.0 };
-	drawSphere(1.0, sphereColor);
+	//drawSphere(1.0, sphereColor);
 }
 
 void myDisplay() {
@@ -264,7 +303,7 @@ void myDisplay() {
 	glLightfv(GL_LIGHT0, GL_SPECULAR, specular);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
 
-	GLfloat lightPosition[] = { 0.0, 0.0, 50.0, 1.0 };
+	GLfloat lightPosition[] = { 0.0, 200.0, 0.0, 1.0 };
 	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
 
 	glPolygonMode(GL_FRONT_AND_BACK, polygonMode);
@@ -275,19 +314,44 @@ void myDisplay() {
 
 	drawAxes();
 	drawGrid();
+	
 
-	glPushMatrix();
+	glPushMatrix();	
+
 	glTranslatef(cameraPosition[0], cameraPosition[1] - 1.0, cameraPosition[2] - 2.0);
 	glRotatef(270.0, 0.0, 1.0, 0.0);
 	glScalef(0.5, 0.5, 0.5);
 	drawCessna();
+
+	glPushMatrix();
+	glTranslatef(-leftPropellerToOrigin[0], -leftPropellerToOrigin[1], -leftPropellerToOrigin[2]);
+	glRotatef(propellerRotationDeg, 1.0, 0.0, 0.0);
+	glTranslatef(leftPropellerToOrigin[0], leftPropellerToOrigin[1], leftPropellerToOrigin[2]);
+	drawPropeller(GL_TRUE);
+	glPopMatrix();
+
+	setMaterialProperties(color_array_red, color_array_red);
+	glBegin(GL_LINES);
+	glVertex3f(leftPropellerToOrigin[0], leftPropellerToOrigin[1], leftPropellerToOrigin[2]);
+	glVertex3f(leftPropellerToOrigin[0], leftPropellerToOrigin[1], leftPropellerToOrigin[2] + 1.0);
+
+	glVertex3f(leftPropellerToOrigin[0], leftPropellerToOrigin[1], leftPropellerToOrigin[2]);
+	glVertex3f(leftPropellerToOrigin[0], leftPropellerToOrigin[1], leftPropellerToOrigin[2] - 1.0);
+
+	glVertex3f(leftPropellerToOrigin[0], leftPropellerToOrigin[1], leftPropellerToOrigin[2]);
+	glVertex3f(leftPropellerToOrigin[0], leftPropellerToOrigin[1] + 1.0, leftPropellerToOrigin[2]);
+
+	glVertex3f(leftPropellerToOrigin[0], leftPropellerToOrigin[1], leftPropellerToOrigin[2]);
+	glVertex3f(leftPropellerToOrigin[0], leftPropellerToOrigin[1] - 1.0, leftPropellerToOrigin[2]);
+	glEnd();
+
 	glPopMatrix();
 
 	glutSwapBuffers(); // send drawing information to OpenGL
 }
 
 void myIdle() {
-
+	propellerRotationDeg += 1.0;
 	glutPostRedisplay();
 }
 
@@ -308,6 +372,11 @@ void myKeyboard(unsigned char key, int x, int y) {
 		break;
 	case 'q':
 		exit(0);
+		break;
+	case '1':
+		specialPart++;
+		if (specialPart > 32) specialPart = 0;
+		printf("%d\n", specialPart);
 		break;
 	}
 }
@@ -334,6 +403,21 @@ void initializeGL() {
 
 void main(int argc, char** argv) {
 	loadPlanePoints("cessna.txt", &planePoints[0], planeFaceLists, CESSNA_POINT_COUNT);
+	loadPlanePoints("propeller.txt", &leftPropellerPoints[0], leftPropellerFaces, PROPELLER_POINT_COUNT);
+
+	printf("LEFT HIGHEST: X: %f, Y: %f, Z: %f\n", leftHubHighestCoords[0], leftHubHighestCoords[1], leftHubHighestCoords[2]);
+	printf("LEFT LOWEST: X: %f, Y: %f, Z: %f\n", leftHubLowestCoords[0], leftHubLowestCoords[1], leftHubLowestCoords[2]);
+
+	int i;
+	for (i = 0; i < 3; i++) {
+		leftPropellerToOrigin[i] = -((GLfloat)leftHubHighestCoords[i] + (GLfloat)leftHubLowestCoords[i]) / 2.0;
+	}
+
+	printf("LEFT TO ORIGIN: X: %f, Y: %f, Z: %f\n",
+		leftPropellerToOrigin[0],
+		leftPropellerToOrigin[1],
+		leftPropellerToOrigin[2]
+	);
 
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
