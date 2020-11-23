@@ -1,14 +1,13 @@
 ﻿  Main.c
-C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\MyDrawingHelpers.h(54,105): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
-C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\MyDrawingHelpers.h(61,108): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\MyDrawingHelpers.h(42,101): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
 C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\MyColors.h(12,39): warning C4305: 'initializing': truncation from 'double' to 'GLfloat'
 C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(35,1): warning C4305: 'initializing': truncation from 'double' to 'GLfloat'
 C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(106,19): warning C4047: 'function': 'char *' differs in levels of indirection from 'char (*)[20]'
 C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(106,10): warning C4024: 'fgets': different types for formal and actual parameter 1
-C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(142,58): warning C4020: 'insertFace': too many actual parameters
-C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(225,1): warning C4305: 'initializing': truncation from 'double' to 'GLfloat'
-C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(311,57): warning C4244: 'function': conversion from 'double' to 'GLfloat', possible loss of data
-C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(311,82): warning C4244: 'function': conversion from 'double' to 'GLfloat', possible loss of data
-C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(401,27): warning C4113: 'void (__cdecl *)()' differs in parameter lists from 'void (__cdecl *)(void)'
-C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(402,21): warning C4113: 'void (__cdecl *)()' differs in parameter lists from 'void (__cdecl *)(void)'
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(138,58): warning C4020: 'insertFace': too many actual parameters
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(221,1): warning C4305: 'initializing': truncation from 'double' to 'GLfloat'
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(307,57): warning C4244: 'function': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(307,82): warning C4244: 'function': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(394,27): warning C4113: 'void (__cdecl *)()' differs in parameter lists from 'void (__cdecl *)(void)'
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(395,21): warning C4113: 'void (__cdecl *)()' differs in parameter lists from 'void (__cdecl *)(void)'
   CSCI3161_FinalProject_MariaJessen.vcxproj -> C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Debug\CSCI3161_FinalProject_MariaJessen.exe

@@ -18,7 +18,7 @@ const GLfloat gridSectionWidth = 2.0;
 
 GLboolean isFullscreen = GL_FALSE;
 
-GLfloat propellerRotationDeg = 10.0;
+GLfloat propellerRotationDeg = 0.0;
 
 int specialPart = 1;
 
@@ -125,10 +125,6 @@ void loadPlanePoints(char filename[], struct Point* points, struct FaceNode* fac
 					getLowestCoordinates(point, leftHubLowestCoords);
 					getHighestCoordinates(point, leftHubHighestCoords);
 				}
-				if (partCount == 23) { // hub2 (right)
-					getLowestCoordinates(point, rightHubLowestCoords);
-					getHighestCoordinates(point, rightHubHighestCoords);
-				}
 
 				// create a new PointNode from that Point, insert it into the list 
 				list = insertPoint(list, point);
@@ -179,7 +175,7 @@ void drawCessna() {
 	}
 }
 
-void drawPropeller(GLboolean isLeft) {
+void drawPropeller() {
 	// get correct set of propeller faces to draw
 	GLfloat colors[2][4] = {
 		COLOR_WHITE,
@@ -188,7 +184,7 @@ void drawPropeller(GLboolean isLeft) {
 
 	int i;
 	for (i = 0; i < 2; i++) {
-		struct FaceNode* currFace = isLeft ? leftPropellerFaces[i] : rightPropellerFaces[i];
+		struct FaceNode* currFace = propellerFaces[i];
 
 		while (currFace != NULL) {
 			struct PointNode* currPoint = currFace->pointList;
@@ -314,28 +310,26 @@ void myDisplay() {
 	drawCessna();
 
 	glPushMatrix();
-	glTranslatef(-leftPropellerToOrigin[0], -leftPropellerToOrigin[1], -leftPropellerToOrigin[2]);
+	glTranslatef(-propellerToOrigin[0], -propellerToOrigin[1], -propellerToOrigin[2]);
 	glRotatef(propellerRotationDeg, 1.0, 0.0, 0.0);
-	glTranslatef(leftPropellerToOrigin[0], leftPropellerToOrigin[1], leftPropellerToOrigin[2]);
-	drawPropeller(GL_TRUE);
+	glTranslatef(propellerToOrigin[0], propellerToOrigin[1],propellerToOrigin[2]);
+	drawPropeller();
 	glPopMatrix();
 
-	/*
 	glPushMatrix();
-	glTranslatef(-rightPropellerToOrigin[0], -rightPropellerToOrigin[1], -rightPropellerToOrigin[2]);
-	glTranslatef(-rightPropellerToOrigin[0], -rightPropellerToOrigin[1], -rightPropellerToOrigin[2]);
+	glTranslatef(-propellerToOrigin[0], -propellerToOrigin[1], propellerToOrigin[2]);
 	glRotatef(propellerRotationDeg, 1.0, 0.0, 0.0);
-	glTranslatef(leftPropellerToOrigin[0], leftPropellerToOrigin[1], leftPropellerToOrigin[2]);
-	drawPropeller(GL_TRUE);
+	glTranslatef(propellerToOrigin[0], propellerToOrigin[1], propellerToOrigin[2]);
+	drawPropeller();
 	glPopMatrix();
-	*/
+
 	glPopMatrix();
 
 	glutSwapBuffers(); // send drawing information to OpenGL
 }
 
 void myIdle() {
-	propellerRotationDeg += 1.0;
+	propellerRotationDeg += 10.0;
 	glutPostRedisplay();
 }
 
@@ -387,10 +381,9 @@ void initializeGL() {
 
 void main(int argc, char** argv) {
 	loadPlanePoints("cessna.txt", &planePoints[0], planeFaceLists, CESSNA_POINT_COUNT);
-	loadPlanePoints("propeller.txt", &leftPropellerPoints[0], leftPropellerFaces, PROPELLER_POINT_COUNT);
+	loadPlanePoints("propeller.txt", &propellerPoints[0], propellerFaces, PROPELLER_POINT_COUNT);
 
-	setLeftPropellerOffsets();
-	setRightPropellerOffsets();
+	setPropellerOffsets();
 
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
