@@ -2,6 +2,11 @@
 #define CESSNA_POINT_COUNT 6763
 #define PROPELLER_POINT_COUNT 6763
 
+#define DIRECTION_GO_STRAIGHT 0
+#define DIRECTION_GO_RIGHT 1
+#define DIRECTION_GO_LEFT 2
+
+
 struct Point {
 	GLfloat vertex_x;
 	GLfloat vertex_y;

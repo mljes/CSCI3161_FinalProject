@@ -19,6 +19,17 @@ const GLfloat gridSectionWidth = 2.0;
 GLboolean isFullscreen = GL_FALSE;
 
 GLfloat propellerRotationDeg = 0.0;
+GLfloat sceneRotationDeg = 0.0;
+GLfloat sceneRotationDelta = 0.0;
+
+GLfloat planeForwardDelta = 0.0;
+GLfloat planeTravel = 0.0;
+
+GLfloat planeRollDeg = 0.0;
+
+GLint currentPlaneDirection = DIRECTION_GO_STRAIGHT;
+
+GLboolean simpleSceneMode = GL_TRUE;
 
 int specialPart = 1;
 
@@ -267,6 +278,24 @@ void drawAxes() {
 	//drawSphere(1.0, sphereColor);
 }
 
+void drawSceneryCylinder() {
+	GLUquadricObj* quadricPtr;
+	quadricPtr = gluNewQuadric();
+
+	int quadricDrawingStyle = polygonMode == GL_LINE ? GLU_LINE : GLU_FILL;
+
+	gluQuadricDrawStyle(quadricPtr, quadricDrawingStyle);
+	gluQuadricNormals(quadricPtr, GLU_SMOOTH);
+
+	setMaterialProperties(color_array_cyan, color_array_cyan);
+
+	glPushMatrix();
+	glRotatef(90.0, 1.0, 0.0, 0.0);
+	gluDisk(quadricPtr, 0.0, 50.0, 20.0, 20.0);
+	//gluCylinder(quadricPtr, )
+	glPopMatrix();
+}
+
 void myDisplay() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glMatrixMode(GL_MODELVIEW);
@@ -289,7 +318,7 @@ void myDisplay() {
 	glLightfv(GL_LIGHT0, GL_SPECULAR, specular);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
 
-	GLfloat lightPosition[] = { 0.0, 200.0, 0.0, 1.0 };
+	GLfloat lightPosition[] = { 0.0, 200.0, 0.0, 0.0 };
 	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
 
 	glPolygonMode(GL_FRONT_AND_BACK, polygonMode);
@@ -297,15 +326,30 @@ void myDisplay() {
 	gluLookAt(cameraPosition[0], cameraPosition[1], cameraPosition[2],
 				cameraFocusPoint[0], cameraFocusPoint[1], cameraFocusPoint[2],
 				cameraUpVector[0], cameraUpVector[1], cameraUpVector[2]);
-
-	drawAxes();
-	drawGrid();
 	
+	glPushMatrix();
+	
+	glTranslatef(cameraPosition[0], cameraPosition[1], cameraPosition[2]);
+	glTranslatef(0.0, 0.0, planeTravel);
+	glRotatef(sceneRotationDeg, 0.0, 1.0, 0.0);
+	glTranslatef(-cameraPosition[0], -cameraPosition[1], -cameraPosition[2]);
+
+	if (simpleSceneMode) {
+		drawAxes();
+		drawGrid();
+	}
+	else {
+		drawSceneryCylinder();
+	}
+	
+
+	glPopMatrix();
 
 	glPushMatrix();	
 
 	glTranslatef(cameraPosition[0], cameraPosition[1] - 1.0, cameraPosition[2] - 2.0);
 	glRotatef(270.0, 0.0, 1.0, 0.0);
+	glRotatef(planeRollDeg, 1.0, 0.0, 0.0);
 	glScalef(0.5, 0.5, 0.5);
 	drawCessna();
 
@@ -330,6 +374,35 @@ void myDisplay() {
 
 void myIdle() {
 	propellerRotationDeg += 10.0;
+
+	double centreMouseBoundary = windowWidth / 2;
+
+	switch (currentPlaneDirection) {
+	case DIRECTION_GO_LEFT:
+		if (planeRollDeg < 45.0) planeRollDeg -= sceneRotationDelta;
+
+		sceneRotationDeg += sceneRotationDelta;
+		break;
+	case DIRECTION_GO_RIGHT:
+		if (planeRollDeg > -45.0) planeRollDeg -= sceneRotationDelta;
+		 
+		sceneRotationDeg += sceneRotationDelta;
+		break;
+	case DIRECTION_GO_STRAIGHT:
+
+		if (planeRollDeg < 0.0) {
+			planeRollDeg += 1.0;
+		}
+		else if (planeRollDeg > 0.0) {
+			planeRollDeg -= 1.0;
+		}
+
+		planeRollDeg = abs(planeRollDeg) < 1.0 ? 0.0 : planeRollDeg;
+
+		break;
+	}
+
+	planeTravel += planeForwardDelta;
 	glutPostRedisplay();
 }
 
@@ -356,11 +429,56 @@ void myKeyboard(unsigned char key, int x, int y) {
 		if (specialPart > 32) specialPart = 0;
 		printf("%d\n", specialPart);
 		break;
+	case 's':
+		simpleSceneMode = !simpleSceneMode;
+	}
+}
+
+void mySpecialKeyboard(int key, int x, int y) {
+	printf("Pressed: %d\n", key);
+	switch (key) {
+	case 104:
+		planeForwardDelta += 0.1;
+		break;
+	case 105:
+		planeForwardDelta -= 0.1;
+		planeForwardDelta = planeForwardDelta <= 0.0 ? 0.1 : planeForwardDelta;
+		break;
+	case 101:
+		cameraPosition[1] += 0.1;
+		cameraFocusPoint[1] += 0.1;
+		break;
+	case 103:
+		cameraPosition[1] -= 0.1;
+		cameraFocusPoint[1] -= 0.1;
+		break;
+	}
+}
+
+void myPassiveMotion(int x, int y) {
+	printf("MOUSE POSITION: %d, %d\n", x, y);
+
+	double centreMouseBoundary = (windowWidth / 2);
+
+	if (x > (centreMouseBoundary + 5)) {
+		currentPlaneDirection = DIRECTION_GO_RIGHT;
+		sceneRotationDelta = (x - centreMouseBoundary) / windowWidth * 10;
+	}
+	else if (x < (centreMouseBoundary - 5)) {
+		currentPlaneDirection = DIRECTION_GO_LEFT;
+		sceneRotationDelta = (x - centreMouseBoundary) / windowWidth * 10;
+	}
+	else {
+		currentPlaneDirection = DIRECTION_GO_STRAIGHT;
+		sceneRotationDelta = 0.0;
 	}
 }
 
 void myReshape(int newWidth, int newHeight) {
 	glViewport(0, 0, newWidth, newHeight);
+
+	windowWidth = newWidth;
+	windowHeight = newHeight;
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -377,6 +495,8 @@ void initializeGL() {
 	gluPerspective(45, (float)windowWidth / (float)windowHeight, 0.1, 60.0);
 
 	glMatrixMode(GL_MODELVIEW); // use model-view mode now that we want to draw things
+
+	glutWarpPointer(windowWidth / 2, windowHeight / 2);
 }
 
 void main(int argc, char** argv) {
@@ -385,15 +505,21 @@ void main(int argc, char** argv) {
 
 	setPropellerOffsets();
 
+	//planeTravel = cameraPosition[2];
+
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
 	glutInitWindowSize(windowWidth, windowHeight);
 	glutInitWindowPosition(100, 150);
 	glutCreateWindow("Maria Jessen's Final Project");
 
+	//printf("SCREEN WIDTH: %d\n", glutGet(GLUT_SCREEN_WIDTH));
+
 	glutDisplayFunc(myDisplay);
 	glutIdleFunc(myIdle);
 	glutKeyboardFunc(myKeyboard);
+	glutSpecialFunc(mySpecialKeyboard);
+	glutPassiveMotionFunc(myPassiveMotion);
 	glutReshapeFunc(myReshape);
 
 	initializeGL(); // set up OpenGL initial values
