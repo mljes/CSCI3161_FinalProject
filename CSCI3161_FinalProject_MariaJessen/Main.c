@@ -287,13 +287,18 @@ void drawSceneryCylinder() {
 	gluQuadricDrawStyle(quadricPtr, quadricDrawingStyle);
 	gluQuadricNormals(quadricPtr, GLU_SMOOTH);
 
-	setMaterialProperties(color_array_cyan, color_array_cyan);
-
 	glPushMatrix();
-	glRotatef(90.0, 1.0, 0.0, 0.0);
-	gluDisk(quadricPtr, 0.0, 50.0, 20.0, 20.0);
-	//gluCylinder(quadricPtr, )
+	glRotatef(270.0, 1.0, 0.0, 0.0);
+
+	setMaterialProperties(color_array_cyan, color_array_cyan);
+	gluDisk(quadricPtr, 0.0, 51.0, 20.0, 20.0);
+	
+	glTranslatef(0.0, -1.0, 0.0);
+	setMaterialProperties(color_array_peach, color_array_peach);
+	gluCylinder(quadricPtr, 50.0, 50.0, 50.0, 20.0, 20.0);
 	glPopMatrix();
+
+	
 }
 
 void myDisplay() {
@@ -482,7 +487,7 @@ void myReshape(int newWidth, int newHeight) {
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(45, (float)newWidth / (float)newHeight, 0.1, 50.0);
+	gluPerspective(45, (float)newWidth / (float)newHeight, 0.1, 100.0);
 }
 
 void initializeGL() {
@@ -492,7 +497,7 @@ void initializeGL() {
 	glMatrixMode(GL_PROJECTION);      // use projection mode (just while we set the camera properties for perspective)
 	glLoadIdentity(); // load the identity matrix
 
-	gluPerspective(45, (float)windowWidth / (float)windowHeight, 0.1, 60.0);
+	gluPerspective(45, (float)windowWidth / (float)windowHeight, 0.1, 100.0);
 
 	glMatrixMode(GL_MODELVIEW); // use model-view mode now that we want to draw things
 
