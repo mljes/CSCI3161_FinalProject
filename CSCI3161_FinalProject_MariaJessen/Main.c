@@ -1,8 +1,11 @@
 #include <freeglut.h>
 #include <stdio.h>
+#include <string.h>
 #include "MyDrawingHelpers.h"
 #include "LinkedList.h"
 #include "MyColors.h"
+#include "LoadTexture.h"
+#include <time.h>
 
 int windowWidth = 800;
 int windowHeight = 800;
@@ -30,12 +33,17 @@ GLfloat planeRollDeg = 0.0;
 GLint currentPlaneDirection = DIRECTION_GO_STRAIGHT;
 
 GLboolean simpleSceneMode = GL_TRUE;
+GLboolean fogMode = GL_TRUE;
+
+GLuint skyTextureID;
+GLuint seaTextureID;
+GLuint mountTextureID;
 
 int specialPart = 1;
 
-void setMaterialProperties(GLfloat diffuse[4], GLfloat ambient[4]) {
+void setMaterialProperties(GLfloat diffuse[4], GLfloat ambient[4], GLfloat shine) {
 	GLfloat specularMat[] = { 1.0, 1.0, 1.0, 1.0 }; // neutral specular highlight will reflect color of light source
-	GLfloat shine = 50.0;
+	//GLfloat shine = 50.0;
 	glMaterialfv(GL_FRONT, GL_AMBIENT, ambient);
 	glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse);
 	glMaterialfv(GL_FRONT, GL_SPECULAR, specularMat);
@@ -46,30 +54,30 @@ void setPartColor(int partIndex) {
 	GLfloat ambientColor[] = { 0.1, 0.1, 0.1, 1.0 };
 
 	if (partIndex == specialPart) {
-		setMaterialProperties(color_array_red, ambientColor);
+		setMaterialProperties(color_array_red, ambientColor, 50);
 		return;
 	}
 
 	if (partIndex <= 3) {
-		setMaterialProperties(color_array_yellow, ambientColor);
+		setMaterialProperties(color_array_yellow, ambientColor, 50);
 	}
 	else if (partIndex <= 5) {
-		setMaterialProperties(color_array_black, ambientColor);
+		setMaterialProperties(color_array_black, ambientColor, 50);
 	}
 	else if (partIndex == 6) {
-		setMaterialProperties(color_array_light_purple, ambientColor);
+		setMaterialProperties(color_array_light_purple, ambientColor, 50);
 	}
 	else if (partIndex == 7) {
-		setMaterialProperties(color_array_blue, ambientColor);
+		setMaterialProperties(color_array_blue, ambientColor, 50);
 	}
 	else if (partIndex <= 13) {
-		setMaterialProperties(color_array_yellow, ambientColor);
+		setMaterialProperties(color_array_yellow, ambientColor, 50);
 	}
 	else if (partIndex <= 25) {
-		setMaterialProperties(color_array_blue, ambientColor);
+		setMaterialProperties(color_array_blue, ambientColor, 50);
 	}
 	else if (partIndex <= 32) {
-		setMaterialProperties(color_array_yellow, ambientColor);
+		setMaterialProperties(color_array_yellow, ambientColor, 50);
 	}
 }
 
@@ -169,6 +177,46 @@ void drawVertexWithNormal(struct PointNode* currPoint) {
 	glEnd();
 }
 
+void drawVertexWithTexture(int i, int j) {
+	glNormal3f(mountain1Points[i][j].vertex_x, mountain1Points[i][j].vertex_y, mountain1Points[i][j].vertex_z);
+	glTexCoord2f(mountain1Points[i][j].vertex_x, mountain1Points[i][j].vertex_z);
+	glVertex3f(mountain1Points[i][j].vertex_x, mountain1Points[i][j].vertex_y, mountain1Points[i][j].vertex_z);
+}
+
+void drawMountain() {
+	int i, j;
+
+	glPushMatrix();
+
+	glEnable(GL_TEXTURE_2D);
+	glTranslatef(0.0, -10, 0.0);
+
+	glScalef(0.5, 0.2, 1.0);
+
+	GLint textureX = 0; 
+	GLint textureY = 0;
+
+	glBindTexture(GL_TEXTURE_2D, mountTextureID);
+	
+	for (i = 0; i < MOUNTAIN_RESOLUTION - 1; i++) {
+		glBegin(GL_QUADS);
+		for (j = 0; j < MOUNTAIN_RESOLUTION - 1; j++) {
+
+			GLfloat* color = (mountain1Points[i][j].vertex_y >= snowyAltitude) ? color_array_white : color_array_green;
+
+			setMaterialProperties(color, color, 20);
+
+			drawVertexWithTexture(i, j);
+			drawVertexWithTexture(i, j+1);
+			drawVertexWithTexture(i+1, j+1);
+			drawVertexWithTexture(i+1, j);
+		}
+		glEnd();
+	}
+	glDisable(GL_TEXTURE_2D);
+	glPopMatrix();
+}
+
 void drawCessna() {
 	int i = 0;
 	
@@ -200,7 +248,7 @@ void drawPropeller() {
 		while (currFace != NULL) {
 			struct PointNode* currPoint = currFace->pointList;
 
-			setMaterialProperties(colors[i], colors[i]);
+			setMaterialProperties(colors[i], colors[i], 50);
 			drawVertexWithNormal(currPoint);
 
 			currFace = currFace->next;
@@ -217,7 +265,7 @@ void drawPropeller() {
 void drawSphere(GLfloat radius, GLfloat color[4]) {
 	glColor4fv(color);
 
-	setMaterialProperties(color, color);
+	setMaterialProperties(color, color, 50);
 
 	gluSphere(gluNewQuadric(), radius, 16, 16); // draw a sphere with specified radius, 16 longitudinal segments and 16 latitudinal segments
 }
@@ -232,7 +280,7 @@ void drawGrid() {
 	GLfloat color[4] = COLOR_LIGHT_PURPLE;
 	color[3] = 0.5;
 
-	setMaterialProperties(color, color);
+	setMaterialProperties(color, color, 50);
 
 	glBegin(GL_QUADS);
 	for (i = lowerLimit; i < upperLimit; i++) {
@@ -254,19 +302,19 @@ void drawAxes() {
 
 	// +x axis
 	//glColor3f(1.0, 0.0, 0.0);
-	setMaterialProperties(color_array_red, color_array_red);
+	setMaterialProperties(color_array_red, color_array_red, 50);
 	glVertex3f(0.0, 0.0, 0.0);
 	glVertex3f(20.0, 0.0, 0.0);
 
 	// +y axis
 	//glColor3f(0.0, 1.0, 0.0);
-	setMaterialProperties(color_array_green, color_array_green);
+	setMaterialProperties(color_array_green, color_array_green, 50);
 	glVertex3f(0.0, 0.0, 0.0);
 	glVertex3f(0.0, 20.0, 0.0);
 
 	// +z axis
 	//glColor3f(0.0, 0.0, 1.0);
-	setMaterialProperties(color_array_blue, color_array_blue);
+	setMaterialProperties(color_array_blue, color_array_blue, 50);
 	glVertex3f(0.0, 0.0, 0.0);
 	glVertex3f(0.0, 0.0, 40.0);
 
@@ -278,27 +326,45 @@ void drawAxes() {
 	//drawSphere(1.0, sphereColor);
 }
 
+void drawFog() {
+	glEnable(GL_FOG);
+	glFogfv(GL_FOG_COLOR, color_array_rose_transparent);
+	glFogf(GL_FOG_MODE, GL_EXP);
+	glFogf(GL_FOG_DENSITY, 0.005);
+}
+
 void drawSceneryCylinder() {
-	GLUquadricObj* quadricPtr;
-	quadricPtr = gluNewQuadric();
+	
+	GLUquadricObj *diskPtr, *cylinderPtr;
+	diskPtr = gluNewQuadric();
+	cylinderPtr = gluNewQuadric();
 
 	int quadricDrawingStyle = polygonMode == GL_LINE ? GLU_LINE : GLU_FILL;
 
-	gluQuadricDrawStyle(quadricPtr, quadricDrawingStyle);
-	gluQuadricNormals(quadricPtr, GLU_SMOOTH);
+	gluQuadricDrawStyle(diskPtr, quadricDrawingStyle);
+	gluQuadricNormals(diskPtr, GLU_SMOOTH);
+	gluQuadricTexture(diskPtr, GL_TRUE);
 
+	gluQuadricDrawStyle(cylinderPtr, quadricDrawingStyle);
+	gluQuadricNormals(cylinderPtr, GLU_SMOOTH);
+	gluQuadricTexture(cylinderPtr, GL_TRUE);
+	
 	glPushMatrix();
+	setMaterialProperties(color_array_white, color_array_white, 100);
+	glEnable(GL_TEXTURE_2D);
 	glRotatef(270.0, 1.0, 0.0, 0.0);
 
-	setMaterialProperties(color_array_cyan, color_array_cyan);
-	gluDisk(quadricPtr, 0.0, 51.0, 20.0, 20.0);
-	
-	glTranslatef(0.0, -1.0, 0.0);
-	setMaterialProperties(color_array_peach, color_array_peach);
-	gluCylinder(quadricPtr, 50.0, 50.0, 50.0, 20.0, 20.0);
-	glPopMatrix();
+	if (fogMode) drawFog();
+	glBindTexture(GL_TEXTURE_2D, seaTextureID);
+	gluDisk(diskPtr, 0.0, 600, 100, 100);
+	glDisable(GL_FOG);
 
+	glTranslatef(0.0, -10.0, 0.0);
+	glBindTexture(GL_TEXTURE_2D, skyTextureID);
+	gluCylinder(cylinderPtr, 428, 428, 385, 100, 200);
 	
+	glDisable(GL_TEXTURE_2D);
+	glPopMatrix();
 }
 
 void myDisplay() {
@@ -345,9 +411,8 @@ void myDisplay() {
 	}
 	else {
 		drawSceneryCylinder();
+		drawMountain();
 	}
-	
-
 	glPopMatrix();
 
 	glPushMatrix();	
@@ -436,6 +501,10 @@ void myKeyboard(unsigned char key, int x, int y) {
 		break;
 	case 's':
 		simpleSceneMode = !simpleSceneMode;
+		break;
+	case 'b':
+		fogMode = !fogMode;
+		break;
 	}
 }
 
@@ -487,7 +556,8 @@ void myReshape(int newWidth, int newHeight) {
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(45, (float)newWidth / (float)newHeight, 0.1, 100.0);
+	gluPerspective(45, (float)newWidth / (float)newHeight, 0.1, 5000);
+	glutWarpPointer(windowWidth / 2, windowHeight / 2);
 }
 
 void initializeGL() {
@@ -497,28 +567,62 @@ void initializeGL() {
 	glMatrixMode(GL_PROJECTION);      // use projection mode (just while we set the camera properties for perspective)
 	glLoadIdentity(); // load the identity matrix
 
-	gluPerspective(45, (float)windowWidth / (float)windowHeight, 0.1, 100.0);
+	gluPerspective(45, (float)windowWidth / (float)windowHeight, 0.1, 5000);
 
 	glMatrixMode(GL_MODELVIEW); // use model-view mode now that we want to draw things
 
 	glutWarpPointer(windowWidth / 2, windowHeight / 2);
+
+	glGenTextures(1, &skyTextureID);
+
+	glBindTexture(GL_TEXTURE_2D, skyTextureID);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, SKY_WIDTH, SKY_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, skyTexture);
+
+	glGenTextures(1, &seaTextureID);
+
+	glBindTexture(GL_TEXTURE_2D, seaTextureID);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, SKY_WIDTH, SKY_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, seaTexture);
+
+	glGenTextures(1, &mountTextureID);
+
+	glBindTexture(GL_TEXTURE_2D, mountTextureID);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, SKY_WIDTH, SKY_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, mountTexture);
 }
 
 void main(int argc, char** argv) {
+	srand(time(0));
 	loadPlanePoints("cessna.txt", &planePoints[0], planeFaceLists, CESSNA_POINT_COUNT);
 	loadPlanePoints("propeller.txt", &propellerPoints[0], propellerFaces, PROPELLER_POINT_COUNT);
 
+	loadImage("sky08.ppm");
+	loadImage("sea02.ppm");
+	loadImage("mount03.ppm");
+
 	setPropellerOffsets();
 
-	//planeTravel = cameraPosition[2];
+	struct Point mountainPoint1 = { 0.0, 0.0,  0.0 };
+	struct Point mountainPoint2 = { MOUNTAIN_RESOLUTION, 0.0,  0.0 };
+	struct Point mountainPoint3 = { MOUNTAIN_RESOLUTION, 0.0, MOUNTAIN_RESOLUTION };
+	struct Point mountainPoint4 = { 0.0, 0.0, MOUNTAIN_RESOLUTION };
+	generateMountainGrid(mountainPoint1, mountainPoint2, mountainPoint3, mountainPoint4, MOUNTAIN_START_LEVEL);
 
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
 	glutInitWindowSize(windowWidth, windowHeight);
 	glutInitWindowPosition(100, 150);
 	glutCreateWindow("Maria Jessen's Final Project");
-
-	//printf("SCREEN WIDTH: %d\n", glutGet(GLUT_SCREEN_WIDTH));
 
 	glutDisplayFunc(myDisplay);
 	glutIdleFunc(myIdle);

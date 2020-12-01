@@ -29,5 +29,8 @@
     <ClInclude Include="MyColors.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="LoadTexture.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
