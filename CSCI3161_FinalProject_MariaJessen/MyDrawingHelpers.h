@@ -25,8 +25,11 @@ struct Point planePoints[CESSNA_POINT_COUNT+2];
 struct Point propellerPoints[PROPELLER_POINT_COUNT + 2];
 
 struct Point mountain1Points[MOUNTAIN_RESOLUTION][MOUNTAIN_RESOLUTION];
+GLfloat mountain1Colors[MOUNTAIN_RESOLUTION][MOUNTAIN_RESOLUTION][4];
 
-int mountain1PointCount = 1;
+GLfloat mountain1Peak = 0.0;
+
+//int mountain1PointCount = 1;
 
 struct FaceNode* planeFaceLists[33];
 struct FaceNode* propellerFaces[2];
@@ -37,7 +40,7 @@ GLfloat leftHubHighestCoords[3] = { -10.0, -10.0, -10.0 };
 GLfloat propellerToOrigin[3];
 GLfloat rightPropellerToOrigin[3];
 
-const GLfloat snowyAltitude = 30.0;
+
 
 void getLowestCoordinates(struct Point point, GLfloat lowestCoords[3]) {
 	lowestCoords[0] = point.vertex_x <= lowestCoords[0] ? point.vertex_x : lowestCoords[0];
@@ -98,26 +101,8 @@ void generateMountainGrid(struct Point point1, struct Point point2, struct Point
 	}
 	else {
 		mountain1Points[(int)point1.vertex_x][(int)point1.vertex_z] = point1;
-		
 
-		printf("%d: POINT [%f %f %f] SAVED TO [%d, %d]\n", mountain1PointCount, point1.vertex_x, point1.vertex_y, point1.vertex_z, (int)point1.vertex_x, (int)point1.vertex_z);
-		/*
-		printf("%d: POINT [%f %f %f] SAVED TO [%d, %d]\n", mountain1PointCount, point1.vertex_x, point1.vertex_y, point1.vertex_z, mountainRow, mountainCol);
-
-		if (mountain1PointCount % 4 == 0) printf("\n");
-
-		mountain1PointCount++;
-
-		if (mountainCol == MOUNTAIN_RESOLUTION) mountainRow++;
-		
-		if (mountainCol <= MOUNTAIN_RESOLUTION) 
-			mountainCol++;
-		else {
-			mountainCol = 0;
-		}
-
-		if (mountainRow == MOUNTAIN_RESOLUTION) printf("*DONE*\n");
-		*/
+		mountain1Peak = point1.vertex_y > mountain1Peak ? point1.vertex_y : mountain1Peak;
 	}
 }
 

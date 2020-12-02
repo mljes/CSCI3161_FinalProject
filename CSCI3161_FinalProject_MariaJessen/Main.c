@@ -34,6 +34,8 @@ GLint currentPlaneDirection = DIRECTION_GO_STRAIGHT;
 
 GLboolean simpleSceneMode = GL_TRUE;
 GLboolean fogMode = GL_TRUE;
+GLboolean mountainTexturedMode = GL_FALSE;
+GLboolean showMountains = GL_FALSE;
 
 GLuint skyTextureID;
 GLuint seaTextureID;
@@ -41,43 +43,70 @@ GLuint mountTextureID;
 
 int specialPart = 1;
 
-void setMaterialProperties(GLfloat diffuse[4], GLfloat ambient[4], GLfloat shine) {
-	GLfloat specularMat[] = { 1.0, 1.0, 1.0, 1.0 }; // neutral specular highlight will reflect color of light source
-	//GLfloat shine = 50.0;
+void setMaterialProperties(GLfloat diffuse[4], GLfloat ambient[4], GLfloat specular[4], GLfloat shine) {
 	glMaterialfv(GL_FRONT, GL_AMBIENT, ambient);
 	glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse);
-	glMaterialfv(GL_FRONT, GL_SPECULAR, specularMat);
+	glMaterialfv(GL_FRONT, GL_SPECULAR, specular);
 	glMaterialf(GL_FRONT, GL_SHININESS, shine);
+}
+
+void setMountainPointColors() {
+	int i, j;
+	for (i = 0; i < MOUNTAIN_RESOLUTION; i++) {
+		for (j = 0; j < MOUNTAIN_RESOLUTION; j++) {
+			GLfloat height = mountain1Points[i][j].vertex_y;
+			if (height > (mountain1Peak - MOUNTAIN_START_LEVEL)) {
+				mountain1Colors[i][j][0] = color_array_white[0];
+				mountain1Colors[i][j][1] = color_array_white[1];
+				mountain1Colors[i][j][2] = color_array_white[2];
+			}
+			else if (height > (mountain1Peak - 2 * MOUNTAIN_START_LEVEL)) {
+				mountain1Colors[i][j][0] = color_array_grey[0];
+				mountain1Colors[i][j][1] = color_array_grey[1];
+				mountain1Colors[i][j][2] = color_array_grey[2];
+			}
+			else {
+				GLfloat redModifier = ((float)((rand() % 401) - 200.0) / 1000.0);
+				GLfloat greenModifier = ((float)((rand() % 101)) / 1000.0);
+				GLfloat blueModifier = ((float)((rand() % 201) - 100.0) / 1000.0);
+
+				mountain1Colors[i][j][0] = color_array_dark_green[0] + redModifier;
+				mountain1Colors[i][j][1] = color_array_dark_green[1] - greenModifier;
+				mountain1Colors[i][j][2] = color_array_dark_green[2] + blueModifier;
+			}	
+		}
+	}
 }
 
 void setPartColor(int partIndex) {
 	GLfloat ambientColor[] = { 0.1, 0.1, 0.1, 1.0 };
+	GLfloat specularColor[] = { 1.0, 1.0, 1.0, 1.0 };
 
 	if (partIndex == specialPart) {
-		setMaterialProperties(color_array_red, ambientColor, 50);
+		setMaterialProperties(color_array_red, ambientColor, specularColor, 50);
 		return;
 	}
 
 	if (partIndex <= 3) {
-		setMaterialProperties(color_array_yellow, ambientColor, 50);
+		setMaterialProperties(color_array_yellow, ambientColor, specularColor, 50);
 	}
 	else if (partIndex <= 5) {
-		setMaterialProperties(color_array_black, ambientColor, 50);
+		setMaterialProperties(color_array_black, ambientColor, specularColor, 50);
 	}
 	else if (partIndex == 6) {
-		setMaterialProperties(color_array_light_purple, ambientColor, 50);
+		setMaterialProperties(color_array_light_purple, ambientColor, specularColor, 50);
 	}
 	else if (partIndex == 7) {
-		setMaterialProperties(color_array_blue, ambientColor, 50);
+		setMaterialProperties(color_array_blue, ambientColor, specularColor, 50);
 	}
 	else if (partIndex <= 13) {
-		setMaterialProperties(color_array_yellow, ambientColor, 50);
+		setMaterialProperties(color_array_yellow, ambientColor, specularColor, 50);
 	}
 	else if (partIndex <= 25) {
-		setMaterialProperties(color_array_blue, ambientColor, 50);
+		setMaterialProperties(color_array_blue, ambientColor, specularColor, 50);
 	}
 	else if (partIndex <= 32) {
-		setMaterialProperties(color_array_yellow, ambientColor, 50);
+		setMaterialProperties(color_array_yellow, ambientColor, specularColor, 50);
 	}
 }
 
@@ -178,8 +207,18 @@ void drawVertexWithNormal(struct PointNode* currPoint) {
 }
 
 void drawVertexWithTexture(int i, int j) {
-	glNormal3f(mountain1Points[i][j].vertex_x, mountain1Points[i][j].vertex_y, mountain1Points[i][j].vertex_z);
-	glTexCoord2f(mountain1Points[i][j].vertex_x, mountain1Points[i][j].vertex_z);
+	if (!mountainTexturedMode) {
+		//GLfloat* ambientColor = mountain1Colors[i][j];
+		GLfloat diffuseColor[4] = { 0.1, 0.1, 0.1, 1.0 };
+		GLfloat specularColor[4] = { 0.0, 0.0, 0.0, 1.0 };
+
+		setMaterialProperties(diffuseColor, mountain1Colors[i][j], specularColor, 100);
+	}
+
+	glNormal3f(3 * mountain1Points[i][j].vertex_x, 3 * mountain1Points[i][j].vertex_y, 3 * mountain1Points[i][j].vertex_z);
+
+	if (mountainTexturedMode) glTexCoord2f(mountain1Points[i][j].vertex_x / MOUNTAIN_RESOLUTION, mountain1Points[i][j].vertex_z / MOUNTAIN_RESOLUTION);
+
 	glVertex3f(mountain1Points[i][j].vertex_x, mountain1Points[i][j].vertex_y, mountain1Points[i][j].vertex_z);
 }
 
@@ -188,24 +227,21 @@ void drawMountain() {
 
 	glPushMatrix();
 
-	glEnable(GL_TEXTURE_2D);
-	glTranslatef(0.0, -10, 0.0);
+	glTranslatef(0.0, -pow(mountain1Peak, 0.5), 0.0);
 
 	glScalef(0.5, 0.2, 1.0);
 
 	GLint textureX = 0; 
 	GLint textureY = 0;
-
-	glBindTexture(GL_TEXTURE_2D, mountTextureID);
+	
+	if (mountainTexturedMode) {
+		glEnable(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D, mountTextureID);
+	}
 	
 	for (i = 0; i < MOUNTAIN_RESOLUTION - 1; i++) {
 		glBegin(GL_QUADS);
 		for (j = 0; j < MOUNTAIN_RESOLUTION - 1; j++) {
-
-			GLfloat* color = (mountain1Points[i][j].vertex_y >= snowyAltitude) ? color_array_white : color_array_green;
-
-			setMaterialProperties(color, color, 20);
-
 			drawVertexWithTexture(i, j);
 			drawVertexWithTexture(i, j+1);
 			drawVertexWithTexture(i+1, j+1);
@@ -248,7 +284,9 @@ void drawPropeller() {
 		while (currFace != NULL) {
 			struct PointNode* currPoint = currFace->pointList;
 
-			setMaterialProperties(colors[i], colors[i], 50);
+			//GLfloat diffuseColor[] = { 0.1, 0.1, 0.1, 1.0 };
+			GLfloat specularColor[] = { 1.0, 1.0, 1.0, 1.0 };
+			setMaterialProperties(colors[i], colors[i], specularColor, 50);
 			drawVertexWithNormal(currPoint);
 
 			currFace = currFace->next;
@@ -265,7 +303,7 @@ void drawPropeller() {
 void drawSphere(GLfloat radius, GLfloat color[4]) {
 	glColor4fv(color);
 
-	setMaterialProperties(color, color, 50);
+	setMaterialProperties(color, color, color, 50);
 
 	gluSphere(gluNewQuadric(), radius, 16, 16); // draw a sphere with specified radius, 16 longitudinal segments and 16 latitudinal segments
 }
@@ -279,17 +317,30 @@ void drawGrid() {
 	//printf("%d, %d\n", lowerLimit, upperLimit);
 	GLfloat color[4] = COLOR_LIGHT_PURPLE;
 	color[3] = 0.5;
-
-	setMaterialProperties(color, color, 50);
+;
+	setMaterialProperties(color, color, color_array_white, 50);
 
 	glBegin(GL_QUADS);
 	for (i = lowerLimit; i < upperLimit; i++) {
 		for (j = lowerLimit; j < upperLimit; j++) {
-			//printf("%d, %d\n", i, j);
-			glVertex3f(gridSectionWidth * i, 0.0, gridSectionWidth * j);
-			glVertex3f(gridSectionWidth * i, 0.0, gridSectionWidth * j + gridSectionWidth);
-			glVertex3f(gridSectionWidth * i + gridSectionWidth, 0.0, gridSectionWidth * j + gridSectionWidth);
-			glVertex3f(gridSectionWidth * i + gridSectionWidth, 0.0, gridSectionWidth * j);
+			GLfloat currentGridPoints[4][3] = {
+				{gridSectionWidth * i, 0.0, gridSectionWidth * j},
+				{gridSectionWidth * i, 0.0, gridSectionWidth * j + gridSectionWidth},
+				{gridSectionWidth * i + gridSectionWidth, 0.0, gridSectionWidth * j + gridSectionWidth},
+				{gridSectionWidth * i + gridSectionWidth, 0.0, gridSectionWidth * j}
+			};
+
+			glNormal3fv(currentGridPoints[0]);
+			glVertex3fv(currentGridPoints[0]);
+
+			glNormal3fv(currentGridPoints[1]);
+			glVertex3fv(currentGridPoints[1]);
+
+			glNormal3fv(currentGridPoints[2]);
+			glVertex3fv(currentGridPoints[2]);
+
+			glNormal3fv(currentGridPoints[3]);
+			glVertex3fv(currentGridPoints[3]);
 		}
 	}
 	glEnd();
@@ -302,19 +353,19 @@ void drawAxes() {
 
 	// +x axis
 	//glColor3f(1.0, 0.0, 0.0);
-	setMaterialProperties(color_array_red, color_array_red, 50);
+	setMaterialProperties(color_array_red, color_array_red, color_array_red, 50);
 	glVertex3f(0.0, 0.0, 0.0);
 	glVertex3f(20.0, 0.0, 0.0);
 
 	// +y axis
 	//glColor3f(0.0, 1.0, 0.0);
-	setMaterialProperties(color_array_green, color_array_green, 50);
+	setMaterialProperties(color_array_green, color_array_green, color_array_green, 50);
 	glVertex3f(0.0, 0.0, 0.0);
 	glVertex3f(0.0, 20.0, 0.0);
 
 	// +z axis
 	//glColor3f(0.0, 0.0, 1.0);
-	setMaterialProperties(color_array_blue, color_array_blue, 50);
+	setMaterialProperties(color_array_blue, color_array_blue, color_array_blue, 50);
 	glVertex3f(0.0, 0.0, 0.0);
 	glVertex3f(0.0, 0.0, 40.0);
 
@@ -323,7 +374,7 @@ void drawAxes() {
 	glLineWidth(1.0); // reset line width
 
 	GLfloat sphereColor[] = { 1.0, 1.0, 1.0, 1.0 };
-	//drawSphere(1.0, sphereColor);
+	drawSphere(1.0, sphereColor);
 }
 
 void drawFog() {
@@ -350,7 +401,7 @@ void drawSceneryCylinder() {
 	gluQuadricTexture(cylinderPtr, GL_TRUE);
 	
 	glPushMatrix();
-	setMaterialProperties(color_array_white, color_array_white, 100);
+	setMaterialProperties(color_array_white, color_array_white, color_array_white, 100);
 	glEnable(GL_TEXTURE_2D);
 	glRotatef(270.0, 1.0, 0.0, 0.0);
 
@@ -411,8 +462,10 @@ void myDisplay() {
 	}
 	else {
 		drawSceneryCylinder();
-		drawMountain();
 	}
+
+	if (showMountains) drawMountain();
+
 	glPopMatrix();
 
 	glPushMatrix();	
@@ -505,6 +558,12 @@ void myKeyboard(unsigned char key, int x, int y) {
 	case 'b':
 		fogMode = !fogMode;
 		break;
+	case 'm':
+		showMountains = !showMountains;
+		break;
+	case 't':
+		mountainTexturedMode = !mountainTexturedMode;
+		break;
 	}
 }
 
@@ -560,6 +619,39 @@ void myReshape(int newWidth, int newHeight) {
 	glutWarpPointer(windowWidth / 2, windowHeight / 2);
 }
 
+void initSkyTexture() {
+	glGenTextures(1, &skyTextureID);
+
+	glBindTexture(GL_TEXTURE_2D, skyTextureID);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, SKY_WIDTH, SKY_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, skyTexture);
+}
+
+void initSeaTexture() {
+	glGenTextures(1, &seaTextureID);
+
+	glBindTexture(GL_TEXTURE_2D, seaTextureID);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, SKY_WIDTH, SKY_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, seaTexture);
+}
+
+void initMountainTexture() {
+	glGenTextures(1, &mountTextureID);
+
+	glBindTexture(GL_TEXTURE_2D, mountTextureID);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, SKY_WIDTH, SKY_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, mountTexture);
+}
+
 void initializeGL() {
 	glEnable(GL_DEPTH_TEST);          // enable depth testing
 	glClearColor(0.0, 0.0, 0.0, 1.0); // set background color (black)
@@ -573,41 +665,23 @@ void initializeGL() {
 
 	glutWarpPointer(windowWidth / 2, windowHeight / 2);
 
-	glGenTextures(1, &skyTextureID);
-
-	glBindTexture(GL_TEXTURE_2D, skyTextureID);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, SKY_WIDTH, SKY_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, skyTexture);
-
-	glGenTextures(1, &seaTextureID);
-
-	glBindTexture(GL_TEXTURE_2D, seaTextureID);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, SKY_WIDTH, SKY_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, seaTexture);
-
-	glGenTextures(1, &mountTextureID);
-
-	glBindTexture(GL_TEXTURE_2D, mountTextureID);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, SKY_WIDTH, SKY_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, mountTexture);
+	initSkyTexture();
+	initSeaTexture();
+	initMountainTexture();
 }
 
 void main(int argc, char** argv) {
 	srand(time(0));
 	loadPlanePoints("cessna.txt", &planePoints[0], planeFaceLists, CESSNA_POINT_COUNT);
 	loadPlanePoints("propeller.txt", &propellerPoints[0], propellerFaces, PROPELLER_POINT_COUNT);
-
+	
+	printf("LOADING SKY TEXTURE...\n");
 	loadImage("sky08.ppm");
+
+	printf("LOADING SEA TEXTURE...\n");
 	loadImage("sea02.ppm");
+
+	printf("LOADING MOUNTAIN TEXTURE...\n");
 	loadImage("mount03.ppm");
 
 	setPropellerOffsets();
@@ -617,6 +691,8 @@ void main(int argc, char** argv) {
 	struct Point mountainPoint3 = { MOUNTAIN_RESOLUTION, 0.0, MOUNTAIN_RESOLUTION };
 	struct Point mountainPoint4 = { 0.0, 0.0, MOUNTAIN_RESOLUTION };
 	generateMountainGrid(mountainPoint1, mountainPoint2, mountainPoint3, mountainPoint4, MOUNTAIN_START_LEVEL);
+
+	setMountainPointColors();
 
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
