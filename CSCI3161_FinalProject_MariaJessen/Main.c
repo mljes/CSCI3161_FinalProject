@@ -50,29 +50,29 @@ void setMaterialProperties(GLfloat diffuse[4], GLfloat ambient[4], GLfloat specu
 	glMaterialf(GL_FRONT, GL_SHININESS, shine);
 }
 
-void setMountainPointColors(GLfloat mountainColorArray[MOUNTAIN_RESOLUTION][MOUNTAIN_RESOLUTION][4]) {
+void setMountainPointColors(GLfloat peak, GLfloat colors[MOUNTAIN_RESOLUTION][MOUNTAIN_RESOLUTION][4], struct Point points[MOUNTAIN_RESOLUTION][MOUNTAIN_RESOLUTION]) {
 	int i, j;
 	for (i = 0; i < MOUNTAIN_RESOLUTION; i++) {
 		for (j = 0; j < MOUNTAIN_RESOLUTION; j++) {
-			GLfloat height = mountain1Points[i][j].vertex_y;
-			if (height > (mountain1Peak - MOUNTAIN_START_LEVEL)) {
-				mountainColorArray[i][j][0] = color_array_white[0];
-				mountainColorArray[i][j][1] = color_array_white[1];
-				mountainColorArray[i][j][2] = color_array_white[2];
+			GLfloat height = points[i][j].vertex_y;
+			if (height > (peak - MOUNTAIN_START_LEVEL)) {
+				colors[i][j][0] = color_array_white[0];
+				colors[i][j][1] = color_array_white[1];
+				colors[i][j][2] = color_array_white[2];
 			}
-			else if (height > (mountain1Peak - 2 * MOUNTAIN_START_LEVEL)) {
-				mountainColorArray[i][j][0] = color_array_grey[0];
-				mountainColorArray[i][j][1] = color_array_grey[1];
-				mountainColorArray[i][j][2] = color_array_grey[2];
+			else if (height > (peak - 2 * MOUNTAIN_START_LEVEL)) {
+				colors[i][j][0] = color_array_grey[0];
+				colors[i][j][1] = color_array_grey[1];
+				colors[i][j][2] = color_array_grey[2];
 			}
 			else {
 				GLfloat redModifier = ((float)((rand() % 401) - 200.0) / 1000.0);
 				GLfloat greenModifier = ((float)((rand() % 101)) / 1000.0);
 				GLfloat blueModifier = ((float)((rand() % 201) - 100.0) / 1000.0);
 
-				mountainColorArray[i][j][0] = color_array_dark_green[0] + redModifier;
-				mountainColorArray[i][j][1] = color_array_dark_green[1] - greenModifier;
-				mountainColorArray[i][j][2] = color_array_dark_green[2] + blueModifier;
+				colors[i][j][0] = color_array_dark_green[0] + redModifier;
+				colors[i][j][1] = color_array_dark_green[1] - greenModifier;
+				colors[i][j][2] = color_array_dark_green[2] + blueModifier;
 			}	
 		}
 	}
@@ -222,18 +222,48 @@ void drawVertexWithTexture(struct Point points[MOUNTAIN_RESOLUTION][MOUNTAIN_RES
 	glVertex3f(points[i][j].vertex_x, points[i][j].vertex_y, points[i][j].vertex_z);
 }
 
-void drawMountain(GLfloat peak, GLfloat xOffset, GLfloat zOffset, struct Point mountainPoints[MOUNTAIN_RESOLUTION][MOUNTAIN_RESOLUTION], GLfloat colors[MOUNTAIN_RESOLUTION][MOUNTAIN_RESOLUTION][4]) {
+
+void drawSquare() {
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, mountTextureID);
+
+	glBegin(GL_QUADS);
+	GLfloat mountainPoint1[] = { 0.0, 0.0,  0.0 };
+	GLfloat mountainPoint2[] = { MOUNTAIN_RESOLUTION, 0.0,  0.0 };
+	GLfloat mountainPoint3[] = { MOUNTAIN_RESOLUTION, 0.0, MOUNTAIN_RESOLUTION };
+	GLfloat mountainPoint4[] = { 0.0, 0.0, MOUNTAIN_RESOLUTION };
+
+	glNormal3fv(mountainPoint1);
+	glTexCoord2f(0.0, 0.0);
+	glVertex3fv(mountainPoint1);
+
+	glNormal3fv(mountainPoint2);
+	glTexCoord2f(1.0, 0.0);
+	glVertex3fv(mountainPoint2);
+
+	glNormal3fv(mountainPoint3);
+	glTexCoord2f(1.0, 1.0);
+	glVertex3fv(mountainPoint3);
+	
+	glNormal3fv(mountainPoint4);
+	glTexCoord2f(0.0, 1.0);
+	glVertex3fv(mountainPoint4);
+	glEnd();
+
+	glDisable(GL_TEXTURE_2D);
+}
+
+void drawMountain(struct Mountain mountain) {
 	int i, j;
 
 	glPushMatrix();
 	
-	glTranslatef(xOffset, -pow(peak, 0.5), zOffset);
+	glTranslatef(mountain.xOffset, -pow(mountain.peak, 0.5), mountain.zOffset);
 
 	glScalef(0.5, 0.2, 1.0);
-
-	GLint textureX = 0; 
-	GLint textureY = 0;
 	
+	setMaterialProperties(color_array_white, color_array_white, color_array_white, 50);
+
 	if (mountainTexturedMode) {
 		glEnable(GL_TEXTURE_2D);
 		glBindTexture(GL_TEXTURE_2D, mountTextureID);
@@ -242,10 +272,10 @@ void drawMountain(GLfloat peak, GLfloat xOffset, GLfloat zOffset, struct Point m
 	for (i = 0; i < MOUNTAIN_RESOLUTION - 1; i++) {
 		glBegin(GL_QUADS);
 		for (j = 0; j < MOUNTAIN_RESOLUTION - 1; j++) {
-			drawVertexWithTexture(mountainPoints, colors, i, j);
-			drawVertexWithTexture(mountainPoints, colors, i, j+1);
-			drawVertexWithTexture(mountainPoints, colors, i+1, j+1);
-			drawVertexWithTexture(mountainPoints, colors, i+1, j);
+			drawVertexWithTexture(mountain.points, mountain.colors, i, j);
+			drawVertexWithTexture(mountain.points, mountain.colors, i, j+1);
+			drawVertexWithTexture(mountain.points, mountain.colors, i+1, j+1);
+			drawVertexWithTexture(mountain.points, mountain.colors, i+1, j);
 		}
 		glEnd();
 	}
@@ -465,8 +495,10 @@ void myDisplay() {
 	}
 
 	if (showMountains) {
-		drawMountain(mountain1Peak, mountain1XOffset, mountain1ZOffset, mountain1Points, mountain1Colors);
-		drawMountain(mountain2Peak, mountain2XOffset, mountain2ZOffset, mountain2Points, mountain2Colors);
+		drawMountain(mountain1);
+		drawMountain(mountain2);
+		drawMountain(mountain3);
+		drawMountain(mountain4);
 	}
 
 	glPopMatrix();
@@ -641,18 +673,30 @@ void initSeaTexture() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, SKY_WIDTH, SKY_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, seaTexture);
+	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, SEA_WIDTH, SEA_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, seaTexture);
 }
 
 void initMountainTexture() {
 	glGenTextures(1, &mountTextureID);
 
 	glBindTexture(GL_TEXTURE_2D, mountTextureID);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, SKY_WIDTH, SKY_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, mountTexture);
+	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, MOUNT_WIDTH, MOUNT_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, mountTexture);
+}
+
+void initMountain(struct Mountain* mountain, int mountainID) {
+	struct Point mountainPoint1 = { 0.0, 0.0,  0.0 };
+	struct Point mountainPoint2 = { MOUNTAIN_RESOLUTION, 0.0,  0.0 };
+	struct Point mountainPoint3 = { MOUNTAIN_RESOLUTION, 0.0, MOUNTAIN_RESOLUTION };
+	struct Point mountainPoint4 = { 0.0, 0.0, MOUNTAIN_RESOLUTION };
+
+	generateMountainGrid(mountainID, mountainPoint1, mountainPoint2, mountainPoint3, mountainPoint4, MOUNTAIN_START_LEVEL);
+
+	setMountainPointColors(mountain->peak, mountain->colors, mountain->points);
+
+	mountain->xOffset = (float)((rand() % 101) - 50.0);
+	mountain->zOffset = (float)((rand() % 101) - 50.0);
 }
 
 void initializeGL() {
@@ -679,32 +723,21 @@ void main(int argc, char** argv) {
 	loadPlanePoints("propeller.txt", &propellerPoints[0], propellerFaces, PROPELLER_POINT_COUNT);
 	
 	printf("LOADING SKY TEXTURE...\n");
-	loadImage("sky08.ppm");
+	loadImage(SKY_TEXTURE_FILENAME);
 
 	printf("LOADING SEA TEXTURE...\n");
-	loadImage("sea02.ppm");
+	loadImage(SEA_TEXTURE_FILENAME);
 
 	printf("LOADING MOUNTAIN TEXTURE...\n");
-	loadImage("mount03.ppm");
+	loadImage(MOUNT_TEXTURE_FILENAME);
 
 	setPropellerOffsets();
 
-	struct Point mountainPoint1 = { 0.0, 0.0,  0.0 };
-	struct Point mountainPoint2 = { MOUNTAIN_RESOLUTION, 0.0,  0.0 };
-	struct Point mountainPoint3 = { MOUNTAIN_RESOLUTION, 0.0, MOUNTAIN_RESOLUTION };
-	struct Point mountainPoint4 = { 0.0, 0.0, MOUNTAIN_RESOLUTION };
+	initMountain(&mountain1, 1);
+	initMountain(&mountain2, 2);
+	initMountain(&mountain3, 3);
+	initMountain(&mountain4, 4);
 
-	generateMountainGrid(1, mountainPoint1, mountainPoint2, mountainPoint3, mountainPoint4, MOUNTAIN_START_LEVEL);
-	generateMountainGrid(2, mountainPoint1, mountainPoint2, mountainPoint3, mountainPoint4, MOUNTAIN_START_LEVEL);
-
-	setMountainPointColors(mountain1Colors);
-	setMountainPointColors(mountain2Colors);
-
-	mountain1XOffset = (float)((rand() % 601) - 300.0) / 10.0;
-	mountain1ZOffset = (float)((rand() % 601) - 300.0) / 10.0;
-
-	mountain1XOffset = (float)((rand() % 601) - 300.0) / 10.0;
-	mountain1ZOffset = (float)((rand() % 601) - 300.0) / 10.0;
 
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);

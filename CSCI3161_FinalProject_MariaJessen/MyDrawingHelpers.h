@@ -24,17 +24,19 @@ struct Point {
 struct Point planePoints[CESSNA_POINT_COUNT+2];
 struct Point propellerPoints[PROPELLER_POINT_COUNT + 2];
 
-struct Point mountain1Points[MOUNTAIN_RESOLUTION][MOUNTAIN_RESOLUTION];
-GLfloat mountain1Colors[MOUNTAIN_RESOLUTION][MOUNTAIN_RESOLUTION][4];
-GLfloat mountain1Peak = 0.0;
-GLfloat mountain1XOffset = 0.0;
-GLfloat mountain1ZOffset = 0.0;
+struct Mountain {
+	struct Point points[MOUNTAIN_RESOLUTION][MOUNTAIN_RESOLUTION];
+	GLfloat colors[MOUNTAIN_RESOLUTION][MOUNTAIN_RESOLUTION][4];
+	GLfloat peak;
+	GLfloat xOffset;
+	GLfloat zOffset;
 
-struct Point mountain2Points[MOUNTAIN_RESOLUTION][MOUNTAIN_RESOLUTION];
-GLfloat mountain2Colors[MOUNTAIN_RESOLUTION][MOUNTAIN_RESOLUTION][4];
-GLfloat mountain2Peak = 0.0;
-GLfloat mountain2XOffset = 0.0;
-GLfloat mountain2ZOffset = 0.0;
+};
+
+struct Mountain mountain1;
+struct Mountain mountain2;
+struct Mountain mountain3;
+struct Mountain mountain4;
 
 struct FaceNode* planeFaceLists[33];
 struct FaceNode* propellerFaces[2];
@@ -105,16 +107,24 @@ void generateMountainGrid(int mountainID, struct Point point1, struct Point poin
 		generateMountainGrid(mountainID, mid3, centrePoint, mid2, point4, level - 1);
 	}
 	else {
-		if (mountainID == 1) {
-			mountain1Points[(int)point1.vertex_x][(int)point1.vertex_z] = point1;
-			mountain1Peak = point1.vertex_y > mountain1Peak ? point1.vertex_y : mountain1Peak;
+		switch (mountainID) {
+		case 1:
+			mountain1.points[(int)point1.vertex_x][(int)point1.vertex_z] = point1;
+			mountain1.peak = point1.vertex_y > mountain1.peak ? point1.vertex_y : mountain1.peak;
+			break;
+		case 2:
+			mountain2.points[(int)point1.vertex_x][(int)point1.vertex_z] = point1;
+			mountain2.peak = point1.vertex_y > mountain2.peak ? point1.vertex_y : mountain2.peak;
+			break;
+		case 3:
+			mountain3.points[(int)point1.vertex_x][(int)point1.vertex_z] = point1;
+			mountain3.peak = point1.vertex_y > mountain3.peak ? point1.vertex_y : mountain3.peak;
+			break;
+		case 4:
+			mountain4.points[(int)point1.vertex_x][(int)point1.vertex_z] = point1;
+			mountain4.peak = point1.vertex_y > mountain4.peak ? point1.vertex_y : mountain4.peak;
+			break;
 		}
-		else if (mountainID == 2) {
-			mountain2Points[(int)point1.vertex_x][(int)point1.vertex_z] = point1;
-			mountain2Peak = point1.vertex_y > mountain2Peak ? point1.vertex_y : mountain2Peak;
-		}
-
-		
 	}
 }
 

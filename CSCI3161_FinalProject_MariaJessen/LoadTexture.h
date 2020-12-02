@@ -9,6 +9,10 @@
 #define MOUNT_WIDTH 1280 
 #define MOUNT_HEIGHT 1104
 
+#define SKY_TEXTURE_FILENAME "sky08.ppm"
+#define SEA_TEXTURE_FILENAME "sea02.ppm"
+#define MOUNT_TEXTURE_FILENAME "mount03.ppm"
+
 GLubyte* imageData;
 GLubyte skyTexture[SKY_HEIGHT][SKY_WIDTH][4];
 GLubyte seaTexture[SEA_HEIGHT][SEA_WIDTH][4];
@@ -96,9 +100,9 @@ void loadImage(char* filename) {
 	for (i = 0; i < totalPixels; i++) {
 		fscanf_s(fileID, "%d %d %d", &red, &green, &blue);
 
-		if (strcmp(filename, "sky08.ppm") == 0) addPixelToSkyTexture(row, column, red, green, blue);
-		if (strcmp(filename, "sea02.ppm") == 0) addPixelToSeaTexture(row, column, red, green, blue);
-		if (strcmp(filename, "mount03.ppm") == 0) addPixelToMountTexture(row, column, red, green, blue);
+		if (strcmp(filename, SKY_TEXTURE_FILENAME) == 0) addPixelToSkyTexture(row, column, red, green, blue);
+		if (strcmp(filename, SEA_TEXTURE_FILENAME) == 0) addPixelToSeaTexture(row, column, red, green, blue);
+		if (strcmp(filename, MOUNT_TEXTURE_FILENAME) == 0) addPixelToMountTexture(row, column, red, green, blue);
 
 		if (row > 0) {
 			row--;
