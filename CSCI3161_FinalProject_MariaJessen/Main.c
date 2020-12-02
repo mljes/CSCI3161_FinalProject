@@ -50,29 +50,29 @@ void setMaterialProperties(GLfloat diffuse[4], GLfloat ambient[4], GLfloat specu
 	glMaterialf(GL_FRONT, GL_SHININESS, shine);
 }
 
-void setMountainPointColors() {
+void setMountainPointColors(GLfloat mountainColorArray[MOUNTAIN_RESOLUTION][MOUNTAIN_RESOLUTION][4]) {
 	int i, j;
 	for (i = 0; i < MOUNTAIN_RESOLUTION; i++) {
 		for (j = 0; j < MOUNTAIN_RESOLUTION; j++) {
 			GLfloat height = mountain1Points[i][j].vertex_y;
 			if (height > (mountain1Peak - MOUNTAIN_START_LEVEL)) {
-				mountain1Colors[i][j][0] = color_array_white[0];
-				mountain1Colors[i][j][1] = color_array_white[1];
-				mountain1Colors[i][j][2] = color_array_white[2];
+				mountainColorArray[i][j][0] = color_array_white[0];
+				mountainColorArray[i][j][1] = color_array_white[1];
+				mountainColorArray[i][j][2] = color_array_white[2];
 			}
 			else if (height > (mountain1Peak - 2 * MOUNTAIN_START_LEVEL)) {
-				mountain1Colors[i][j][0] = color_array_grey[0];
-				mountain1Colors[i][j][1] = color_array_grey[1];
-				mountain1Colors[i][j][2] = color_array_grey[2];
+				mountainColorArray[i][j][0] = color_array_grey[0];
+				mountainColorArray[i][j][1] = color_array_grey[1];
+				mountainColorArray[i][j][2] = color_array_grey[2];
 			}
 			else {
 				GLfloat redModifier = ((float)((rand() % 401) - 200.0) / 1000.0);
 				GLfloat greenModifier = ((float)((rand() % 101)) / 1000.0);
 				GLfloat blueModifier = ((float)((rand() % 201) - 100.0) / 1000.0);
 
-				mountain1Colors[i][j][0] = color_array_dark_green[0] + redModifier;
-				mountain1Colors[i][j][1] = color_array_dark_green[1] - greenModifier;
-				mountain1Colors[i][j][2] = color_array_dark_green[2] + blueModifier;
+				mountainColorArray[i][j][0] = color_array_dark_green[0] + redModifier;
+				mountainColorArray[i][j][1] = color_array_dark_green[1] - greenModifier;
+				mountainColorArray[i][j][2] = color_array_dark_green[2] + blueModifier;
 			}	
 		}
 	}
@@ -206,28 +206,28 @@ void drawVertexWithNormal(struct PointNode* currPoint) {
 	glEnd();
 }
 
-void drawVertexWithTexture(int i, int j) {
+void drawVertexWithTexture(struct Point points[MOUNTAIN_RESOLUTION][MOUNTAIN_RESOLUTION], GLfloat colors[MOUNTAIN_RESOLUTION][MOUNTAIN_RESOLUTION][4], int i, int j) {
 	if (!mountainTexturedMode) {
 		//GLfloat* ambientColor = mountain1Colors[i][j];
 		GLfloat diffuseColor[4] = { 0.1, 0.1, 0.1, 1.0 };
 		GLfloat specularColor[4] = { 0.0, 0.0, 0.0, 1.0 };
 
-		setMaterialProperties(diffuseColor, mountain1Colors[i][j], specularColor, 100);
+		setMaterialProperties(diffuseColor, colors[i][j], specularColor, 100);
 	}
 
-	glNormal3f(3 * mountain1Points[i][j].vertex_x, 3 * mountain1Points[i][j].vertex_y, 3 * mountain1Points[i][j].vertex_z);
+	glNormal3f(3 * points[i][j].vertex_x, 3 * points[i][j].vertex_y, 3 * points[i][j].vertex_z);
 
-	if (mountainTexturedMode) glTexCoord2f(mountain1Points[i][j].vertex_x / MOUNTAIN_RESOLUTION, mountain1Points[i][j].vertex_z / MOUNTAIN_RESOLUTION);
+	if (mountainTexturedMode) glTexCoord2f(points[i][j].vertex_x / MOUNTAIN_RESOLUTION, points[i][j].vertex_z / MOUNTAIN_RESOLUTION);
 
-	glVertex3f(mountain1Points[i][j].vertex_x, mountain1Points[i][j].vertex_y, mountain1Points[i][j].vertex_z);
+	glVertex3f(points[i][j].vertex_x, points[i][j].vertex_y, points[i][j].vertex_z);
 }
 
-void drawMountain() {
+void drawMountain(GLfloat peak, GLfloat xOffset, GLfloat zOffset, struct Point mountainPoints[MOUNTAIN_RESOLUTION][MOUNTAIN_RESOLUTION], GLfloat colors[MOUNTAIN_RESOLUTION][MOUNTAIN_RESOLUTION][4]) {
 	int i, j;
 
 	glPushMatrix();
-
-	glTranslatef(0.0, -pow(mountain1Peak, 0.5), 0.0);
+	
+	glTranslatef(xOffset, -pow(peak, 0.5), zOffset);
 
 	glScalef(0.5, 0.2, 1.0);
 
@@ -242,10 +242,10 @@ void drawMountain() {
 	for (i = 0; i < MOUNTAIN_RESOLUTION - 1; i++) {
 		glBegin(GL_QUADS);
 		for (j = 0; j < MOUNTAIN_RESOLUTION - 1; j++) {
-			drawVertexWithTexture(i, j);
-			drawVertexWithTexture(i, j+1);
-			drawVertexWithTexture(i+1, j+1);
-			drawVertexWithTexture(i+1, j);
+			drawVertexWithTexture(mountainPoints, colors, i, j);
+			drawVertexWithTexture(mountainPoints, colors, i, j+1);
+			drawVertexWithTexture(mountainPoints, colors, i+1, j+1);
+			drawVertexWithTexture(mountainPoints, colors, i+1, j);
 		}
 		glEnd();
 	}
@@ -464,7 +464,10 @@ void myDisplay() {
 		drawSceneryCylinder();
 	}
 
-	if (showMountains) drawMountain();
+	if (showMountains) {
+		drawMountain(mountain1Peak, mountain1XOffset, mountain1ZOffset, mountain1Points, mountain1Colors);
+		drawMountain(mountain2Peak, mountain2XOffset, mountain2ZOffset, mountain2Points, mountain2Colors);
+	}
 
 	glPopMatrix();
 
@@ -690,9 +693,18 @@ void main(int argc, char** argv) {
 	struct Point mountainPoint2 = { MOUNTAIN_RESOLUTION, 0.0,  0.0 };
 	struct Point mountainPoint3 = { MOUNTAIN_RESOLUTION, 0.0, MOUNTAIN_RESOLUTION };
 	struct Point mountainPoint4 = { 0.0, 0.0, MOUNTAIN_RESOLUTION };
-	generateMountainGrid(mountainPoint1, mountainPoint2, mountainPoint3, mountainPoint4, MOUNTAIN_START_LEVEL);
 
-	setMountainPointColors();
+	generateMountainGrid(1, mountainPoint1, mountainPoint2, mountainPoint3, mountainPoint4, MOUNTAIN_START_LEVEL);
+	generateMountainGrid(2, mountainPoint1, mountainPoint2, mountainPoint3, mountainPoint4, MOUNTAIN_START_LEVEL);
+
+	setMountainPointColors(mountain1Colors);
+	setMountainPointColors(mountain2Colors);
+
+	mountain1XOffset = (float)((rand() % 601) - 300.0) / 10.0;
+	mountain1ZOffset = (float)((rand() % 601) - 300.0) / 10.0;
+
+	mountain1XOffset = (float)((rand() % 601) - 300.0) / 10.0;
+	mountain1ZOffset = (float)((rand() % 601) - 300.0) / 10.0;
 
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);

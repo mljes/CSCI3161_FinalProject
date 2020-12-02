@@ -26,10 +26,15 @@ struct Point propellerPoints[PROPELLER_POINT_COUNT + 2];
 
 struct Point mountain1Points[MOUNTAIN_RESOLUTION][MOUNTAIN_RESOLUTION];
 GLfloat mountain1Colors[MOUNTAIN_RESOLUTION][MOUNTAIN_RESOLUTION][4];
-
 GLfloat mountain1Peak = 0.0;
+GLfloat mountain1XOffset = 0.0;
+GLfloat mountain1ZOffset = 0.0;
 
-//int mountain1PointCount = 1;
+struct Point mountain2Points[MOUNTAIN_RESOLUTION][MOUNTAIN_RESOLUTION];
+GLfloat mountain2Colors[MOUNTAIN_RESOLUTION][MOUNTAIN_RESOLUTION][4];
+GLfloat mountain2Peak = 0.0;
+GLfloat mountain2XOffset = 0.0;
+GLfloat mountain2ZOffset = 0.0;
 
 struct FaceNode* planeFaceLists[33];
 struct FaceNode* propellerFaces[2];
@@ -64,7 +69,7 @@ void setPropellerOffsets() {
 int mountainRow = 0;
 int mountainCol = 0;
 
-void generateMountainGrid(struct Point point1, struct Point point2, struct Point point3, struct Point point4, int level) {
+void generateMountainGrid(int mountainID, struct Point point1, struct Point point2, struct Point point3, struct Point point4, int level) {
 	struct Point mid0;
 	struct Point mid1;
 	struct Point mid2;
@@ -94,15 +99,22 @@ void generateMountainGrid(struct Point point1, struct Point point2, struct Point
 		centrePoint.vertex_y = ((point1.vertex_y + point3.vertex_y) / 2) + rand() % (int)(pow(2, level));
 		centrePoint.vertex_z = (point1.vertex_z + point3.vertex_z) / 2;
 
-		generateMountainGrid(point1, mid0, centrePoint, mid3, level - 1);
-		generateMountainGrid(mid0, point2, mid1, centrePoint, level - 1);
-		generateMountainGrid(centrePoint, mid1, point3, mid2, level - 1);
-		generateMountainGrid(mid3, centrePoint, mid2, point4, level - 1);
+		generateMountainGrid(mountainID, point1, mid0, centrePoint, mid3, level - 1);
+		generateMountainGrid(mountainID, mid0, point2, mid1, centrePoint, level - 1);
+		generateMountainGrid(mountainID, centrePoint, mid1, point3, mid2, level - 1);
+		generateMountainGrid(mountainID, mid3, centrePoint, mid2, point4, level - 1);
 	}
 	else {
-		mountain1Points[(int)point1.vertex_x][(int)point1.vertex_z] = point1;
+		if (mountainID == 1) {
+			mountain1Points[(int)point1.vertex_x][(int)point1.vertex_z] = point1;
+			mountain1Peak = point1.vertex_y > mountain1Peak ? point1.vertex_y : mountain1Peak;
+		}
+		else if (mountainID == 2) {
+			mountain2Points[(int)point1.vertex_x][(int)point1.vertex_z] = point1;
+			mountain2Peak = point1.vertex_y > mountain2Peak ? point1.vertex_y : mountain2Peak;
+		}
 
-		mountain1Peak = point1.vertex_y > mountain1Peak ? point1.vertex_y : mountain1Peak;
+		
 	}
 }
 
