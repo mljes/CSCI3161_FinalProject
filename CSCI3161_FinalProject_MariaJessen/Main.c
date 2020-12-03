@@ -7,16 +7,19 @@
 #include "LoadTexture.h"
 #include <time.h>
 
+#define KEY_PAGE_UP 104
+#define KEY_PAGE_DOWN 105
+#define KEY_ARROW_UP 101
+#define KEY_ARROW_DOWN 103
+
+#define SPEED_INCREMENT 0.5
+
 int windowWidth = 800;
 int windowHeight = 800;
 
-GLfloat cameraPosition[3] = { 0.0, 10.0, 40.0 };
-GLfloat cameraFocusPoint[3] = { 0.0, 0.0, 0.0 };
-GLfloat cameraUpVector[3] = { 0.0, 1.0, 0.0 };
-
 GLenum polygonMode = GL_FILL;
 
-const GLint gridSize = 100;
+const GLint gridSize = 500;
 const GLfloat gridSectionWidth = 2.0;
 
 GLboolean isFullscreen = GL_FALSE;
@@ -25,7 +28,9 @@ GLfloat propellerRotationDeg = 0.0;
 GLfloat sceneRotationDeg = 0.0;
 GLfloat sceneRotationDelta = 0.0;
 
-GLfloat planeForwardDelta = 0.0;
+GLfloat planeToCameraOffset[3] = { 0.0, -1.0, -2.0 };
+
+GLfloat planeForwardDelta = 0;//SPEED_INCREMENT;
 GLfloat planeTravel = 0.0;
 
 GLfloat planeRollDeg = 0.0;
@@ -36,12 +41,15 @@ GLboolean simpleSceneMode = GL_TRUE;
 GLboolean fogMode = GL_TRUE;
 GLboolean mountainTexturedMode = GL_FALSE;
 GLboolean showMountains = GL_FALSE;
+GLboolean showSnow = GL_FALSE;
 
 GLuint skyTextureID;
 GLuint seaTextureID;
 GLuint mountTextureID;
 
 int specialPart = 1;
+
+GLfloat snowflakeFallDelta = 0.0;
 
 void setMaterialProperties(GLfloat diffuse[4], GLfloat ambient[4], GLfloat specular[4], GLfloat shine) {
 	glMaterialfv(GL_FRONT, GL_AMBIENT, ambient);
@@ -222,37 +230,6 @@ void drawVertexWithTexture(struct Point points[MOUNTAIN_RESOLUTION][MOUNTAIN_RES
 	glVertex3f(points[i][j].vertex_x, points[i][j].vertex_y, points[i][j].vertex_z);
 }
 
-
-void drawSquare() {
-	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, mountTextureID);
-
-	glBegin(GL_QUADS);
-	GLfloat mountainPoint1[] = { 0.0, 0.0,  0.0 };
-	GLfloat mountainPoint2[] = { MOUNTAIN_RESOLUTION, 0.0,  0.0 };
-	GLfloat mountainPoint3[] = { MOUNTAIN_RESOLUTION, 0.0, MOUNTAIN_RESOLUTION };
-	GLfloat mountainPoint4[] = { 0.0, 0.0, MOUNTAIN_RESOLUTION };
-
-	glNormal3fv(mountainPoint1);
-	glTexCoord2f(0.0, 0.0);
-	glVertex3fv(mountainPoint1);
-
-	glNormal3fv(mountainPoint2);
-	glTexCoord2f(1.0, 0.0);
-	glVertex3fv(mountainPoint2);
-
-	glNormal3fv(mountainPoint3);
-	glTexCoord2f(1.0, 1.0);
-	glVertex3fv(mountainPoint3);
-	
-	glNormal3fv(mountainPoint4);
-	glTexCoord2f(0.0, 1.0);
-	glVertex3fv(mountainPoint4);
-	glEnd();
-
-	glDisable(GL_TEXTURE_2D);
-}
-
 void drawMountain(struct Mountain mountain) {
 	int i, j;
 
@@ -260,9 +237,9 @@ void drawMountain(struct Mountain mountain) {
 	
 	glTranslatef(mountain.xOffset, -pow(mountain.peak, 0.5), mountain.zOffset);
 
-	glScalef(0.5, 0.2, 1.0);
+	glScalef(mountain.xScale, mountain.yScale, mountain.zScale);
 	
-	setMaterialProperties(color_array_white, color_array_white, color_array_white, 50);
+	setMaterialProperties(color_array_white, color_array_white, color_array_white, 0);
 
 	if (mountainTexturedMode) {
 		glEnable(GL_TEXTURE_2D);
@@ -378,33 +355,31 @@ void drawGrid() {
 }
 
 void drawAxes() {
+	GLfloat axisLength = 5.0;
 	glLineWidth(5.0); // use lines of width 5
 	glBegin(GL_LINES);
 
 	// +x axis
-	//glColor3f(1.0, 0.0, 0.0);
 	setMaterialProperties(color_array_red, color_array_red, color_array_red, 50);
 	glVertex3f(0.0, 0.0, 0.0);
-	glVertex3f(20.0, 0.0, 0.0);
+	glVertex3f(axisLength, 0.0, 0.0);
 
 	// +y axis
-	//glColor3f(0.0, 1.0, 0.0);
 	setMaterialProperties(color_array_green, color_array_green, color_array_green, 50);
 	glVertex3f(0.0, 0.0, 0.0);
-	glVertex3f(0.0, 20.0, 0.0);
+	glVertex3f(0.0, axisLength, 0.0);
 
 	// +z axis
-	//glColor3f(0.0, 0.0, 1.0);
 	setMaterialProperties(color_array_blue, color_array_blue, color_array_blue, 50);
 	glVertex3f(0.0, 0.0, 0.0);
-	glVertex3f(0.0, 0.0, 40.0);
+	glVertex3f(0.0, 0.0, axisLength);
 
 	glEnd();
 
 	glLineWidth(1.0); // reset line width
 
 	GLfloat sphereColor[] = { 1.0, 1.0, 1.0, 1.0 };
-	drawSphere(1.0, sphereColor);
+	drawSphere(0.5, sphereColor);
 }
 
 void drawFog() {
@@ -442,9 +417,45 @@ void drawSceneryCylinder() {
 
 	glTranslatef(0.0, -10.0, 0.0);
 	glBindTexture(GL_TEXTURE_2D, skyTextureID);
-	gluCylinder(cylinderPtr, 428, 428, 385, 100, 200);
+	gluCylinder(cylinderPtr, SCENE_RADIUS, SCENE_RADIUS, SCENE_HEIGHT, 100, 200);
 	
 	glDisable(GL_TEXTURE_2D);
+	glPopMatrix();
+}
+
+void drawSnowflakeArm(struct Point center, GLfloat endX, GLfloat endY) {
+	glNormal3f(center.vertex_x, center.vertex_y, center.vertex_z);
+	glVertex3f(center.vertex_x, center.vertex_y, center.vertex_z);
+
+	glNormal3f(center.vertex_x + endX, center.vertex_y + endY, center.vertex_z);
+	glVertex3f(center.vertex_x + endX, center.vertex_y + endY, center.vertex_z);
+}
+
+void drawSnowflakes() {
+	int i; 
+	glPushMatrix();
+	setMaterialProperties(color_array_white, color_array_white, color_array_white, 200);
+	glBegin(GL_LINES);
+
+	for (i = 0; i < MAX_SNOWFLAKES; i++) {
+		drawSnowflakeArm(snowflakes[i].center, 0.1, 0.0);
+		drawSnowflakeArm(snowflakes[i].center, -0.1, 0.0);
+		drawSnowflakeArm(snowflakes[i].center, 0.0, 0.1);
+		drawSnowflakeArm(snowflakes[i].center, 0.0, -0.1);
+
+		drawSnowflakeArm(snowflakes[i].center, 0.06, 0.06);
+		drawSnowflakeArm(snowflakes[i].center, 0.06, -0.06);
+		drawSnowflakeArm(snowflakes[i].center, -0.06, -0.06);
+		drawSnowflakeArm(snowflakes[i].center, -0.06, 0.06);
+
+		snowflakes[i].center.vertex_y -= 0.1;
+
+		if (snowflakes[i].center.vertex_y <= 5.0) {
+			snowflakes[i].center.vertex_y = snowflakes[i].initialHeight;
+		}
+	}
+
+	glEnd();
 	glPopMatrix();
 }
 
@@ -480,11 +491,13 @@ void myDisplay() {
 				cameraUpVector[0], cameraUpVector[1], cameraUpVector[2]);
 	
 	glPushMatrix();
-	
-	glTranslatef(cameraPosition[0], cameraPosition[1], cameraPosition[2]);
+
 	glTranslatef(0.0, 0.0, planeTravel);
+
+	// Rotate the scene (except for the plane and camera) to simulate plane turns
+	glTranslatef(cameraPosition[0], cameraPosition[1], cameraPosition[2]);
 	glRotatef(sceneRotationDeg, 0.0, 1.0, 0.0);
-	glTranslatef(-cameraPosition[0], -cameraPosition[1], -cameraPosition[2]);
+	glTranslatef(-cameraPosition[0], -cameraPosition[1], -(cameraPosition[2]));
 
 	if (simpleSceneMode) {
 		drawAxes();
@@ -505,7 +518,7 @@ void myDisplay() {
 
 	glPushMatrix();	
 
-	glTranslatef(cameraPosition[0], cameraPosition[1] - 1.0, cameraPosition[2] - 2.0);
+	glTranslatef(cameraPosition[0] + planeToCameraOffset[0], cameraPosition[1] + planeToCameraOffset[1], cameraPosition[2] + planeToCameraOffset[2]);
 	glRotatef(270.0, 0.0, 1.0, 0.0);
 	glRotatef(planeRollDeg, 1.0, 0.0, 0.0);
 	glScalef(0.5, 0.5, 0.5);
@@ -527,11 +540,15 @@ void myDisplay() {
 
 	glPopMatrix();
 
+	if (showSnow) {
+		drawSnowflakes();
+	}
+
 	glutSwapBuffers(); // send drawing information to OpenGL
 }
 
 void myIdle() {
-	propellerRotationDeg += 10.0;
+	propellerRotationDeg += 15.0;
 
 	double centreMouseBoundary = windowWidth / 2;
 
@@ -560,7 +577,16 @@ void myIdle() {
 		break;
 	}
 
-	planeTravel += planeForwardDelta;
+	if (showSnow) {
+		snowflakeFallDelta -= 10.0;
+	}
+	
+	//cameraPosition[2] -= planeForwardDelta;
+	//cameraFocusPoint[2] -= planeForwardDelta;
+
+	//cameraFocusPoint[0] += sceneRotationDeg;
+
+
 	glutPostRedisplay();
 }
 
@@ -599,26 +625,31 @@ void myKeyboard(unsigned char key, int x, int y) {
 	case 't':
 		mountainTexturedMode = !mountainTexturedMode;
 		break;
+	case 'x':
+		showSnow = !showSnow;
+		break;
 	}
 }
 
 void mySpecialKeyboard(int key, int x, int y) {
+	const GLfloat verticalDelta = 0.2;
+
 	printf("Pressed: %d\n", key);
 	switch (key) {
-	case 104:
-		planeForwardDelta += 0.1;
+	case KEY_PAGE_UP: // increase forward speed
+		planeForwardDelta += SPEED_INCREMENT;
 		break;
-	case 105:
-		planeForwardDelta -= 0.1;
-		planeForwardDelta = planeForwardDelta <= 0.0 ? 0.1 : planeForwardDelta;
+	case KEY_PAGE_DOWN: // decrease forward speed, but keep above 0
+		planeForwardDelta -= SPEED_INCREMENT;
+		planeForwardDelta = planeForwardDelta <= 0.0 ? SPEED_INCREMENT : planeForwardDelta;
 		break;
-	case 101:
-		cameraPosition[1] += 0.1;
-		cameraFocusPoint[1] += 0.1;
+	case KEY_ARROW_UP: // move plane up
+		cameraPosition[1] += verticalDelta;
+		cameraFocusPoint[1] += verticalDelta;
 		break;
-	case 103:
-		cameraPosition[1] -= 0.1;
-		cameraFocusPoint[1] -= 0.1;
+	case KEY_ARROW_DOWN: // move plane down
+		cameraPosition[1] -= verticalDelta;
+		cameraFocusPoint[1] -= verticalDelta;
 		break;
 	}
 }
@@ -630,11 +661,11 @@ void myPassiveMotion(int x, int y) {
 
 	if (x > (centreMouseBoundary + 5)) {
 		currentPlaneDirection = DIRECTION_GO_RIGHT;
-		sceneRotationDelta = (x - centreMouseBoundary) / windowWidth * 10;
+		sceneRotationDelta = ((x - centreMouseBoundary) / windowWidth) * 10;
 	}
 	else if (x < (centreMouseBoundary - 5)) {
 		currentPlaneDirection = DIRECTION_GO_LEFT;
-		sceneRotationDelta = (x - centreMouseBoundary) / windowWidth * 10;
+		sceneRotationDelta = ((x - centreMouseBoundary) / windowWidth) * 10;
 	}
 	else {
 		currentPlaneDirection = DIRECTION_GO_STRAIGHT;
@@ -697,6 +728,10 @@ void initMountain(struct Mountain* mountain, int mountainID) {
 
 	mountain->xOffset = (float)((rand() % 101) - 50.0);
 	mountain->zOffset = (float)((rand() % 101) - 50.0);
+
+	mountain->xScale = (float)(rand() % 11) / 10.0;
+	mountain->yScale = (float)(rand() % 11) / 10.0;
+	mountain->zScale = (float)(rand() % 11) / 10.0;
 }
 
 void initializeGL() {
@@ -738,6 +773,7 @@ void main(int argc, char** argv) {
 	initMountain(&mountain3, 3);
 	initMountain(&mountain4, 4);
 
+	generateSnowFlakes();
 
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
