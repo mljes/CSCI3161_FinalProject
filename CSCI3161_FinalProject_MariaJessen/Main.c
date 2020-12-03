@@ -12,7 +12,7 @@
 #define KEY_ARROW_UP 101
 #define KEY_ARROW_DOWN 103
 
-#define SPEED_INCREMENT 0.5
+#define SPEED_INCREMENT 0.2
 
 int windowWidth = 800;
 int windowHeight = 800;
@@ -492,10 +492,11 @@ void myDisplay() {
 	
 	glPushMatrix();
 
-	glTranslatef(0.0, 0.0, planeTravel);
+	
 
 	// Rotate the scene (except for the plane and camera) to simulate plane turns
 	glTranslatef(cameraPosition[0], cameraPosition[1], cameraPosition[2]);
+	glTranslatef(0.0, 0.0, planeTravel);
 	glRotatef(sceneRotationDeg, 0.0, 1.0, 0.0);
 	glTranslatef(-cameraPosition[0], -cameraPosition[1], -(cameraPosition[2]));
 
@@ -580,12 +581,8 @@ void myIdle() {
 	if (showSnow) {
 		snowflakeFallDelta -= 10.0;
 	}
-	
-	//cameraPosition[2] -= planeForwardDelta;
-	//cameraFocusPoint[2] -= planeForwardDelta;
 
-	//cameraFocusPoint[0] += sceneRotationDeg;
-
+	planeTravel += planeForwardDelta;
 
 	glutPostRedisplay();
 }
@@ -661,11 +658,11 @@ void myPassiveMotion(int x, int y) {
 
 	if (x > (centreMouseBoundary + 5)) {
 		currentPlaneDirection = DIRECTION_GO_RIGHT;
-		sceneRotationDelta = ((x - centreMouseBoundary) / windowWidth) * 10;
+		sceneRotationDelta = (x - centreMouseBoundary) / windowWidth * 10;
 	}
 	else if (x < (centreMouseBoundary - 5)) {
 		currentPlaneDirection = DIRECTION_GO_LEFT;
-		sceneRotationDelta = ((x - centreMouseBoundary) / windowWidth) * 10;
+		sceneRotationDelta = (x - centreMouseBoundary) / windowWidth * 10;
 	}
 	else {
 		currentPlaneDirection = DIRECTION_GO_STRAIGHT;
