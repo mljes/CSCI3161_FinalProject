@@ -148,6 +148,7 @@
     <ClInclude Include="LoadTexture.h" />
     <ClInclude Include="MyColors.h" />
     <ClInclude Include="MyDrawingHelpers.h" />
+    <ClInclude Include="TextHelpers.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

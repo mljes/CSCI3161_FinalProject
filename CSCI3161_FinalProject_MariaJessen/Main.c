@@ -6,6 +6,10 @@
 #include "MyColors.h"
 #include "LoadTexture.h"
 #include <time.h>
+#include <math.h>
+#include "TextHelpers.h"
+
+#define M_PI 3.14159265358979323846
 
 #define KEY_PAGE_UP 104
 #define KEY_PAGE_DOWN 105
@@ -485,15 +489,29 @@ void drawSnowflakes() {
 
 void drawInfoText() {
 	setMaterialProperties(color_array_green, color_array_green, color_array_green, 200);
+	GLint lineLength = 18;
+	GLfloat letterWidth = 0.2;
+	GLfloat letterHeight = 0.3;
+	GLfloat startingX = cameraPosition[0] - letterWidth * (lineLength / 2);
 
-	GLfloat startingX = cameraPosition[0];
+	char text[5][18] = {
+		"------------------",
+		"WEATHER:  CLEAR   ", 
+		"SPEED:    0000KM/H",
+		"ALTITUDE: 0000KM  ",
+		"------------------"
+	};
 
-	char text[4] = "FUCK";
-
-	int i;
-	for (i = 0; i < 4; i++) {
-		glRasterPos3f(startingX + (0.5 * i), cameraPosition[1], cameraPosition[2] - 20);
-		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, text[i]);
+	setWeatherText(text[1], showSnow, GL_FALSE);
+	setNumericalText(text[2], planeForwardDelta, 135);
+	setNumericalText(text[3], cameraPosition[1] + planeToCameraOffset[1], 15);
+	
+	int i, j;
+	for (i = 0; i < 5; i++) {
+		for (j = 0; j < 18; j++) {
+			glRasterPos3f(startingX + (letterWidth * j), cameraPosition[1] + 2 + (letterHeight * i), cameraPosition[2] - 20);
+			glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, text[i][j]);
+		}
 	}
 }
 
