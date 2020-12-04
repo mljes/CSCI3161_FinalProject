@@ -3,45 +3,49 @@ C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJes
 C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\MyDrawingHelpers.h(98,6): warning C4101: 'i': unreferenced local variable
 C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\MyDrawingHelpers.h(155,55): warning C4244: '=': conversion from 'int' to 'GLfloat', possible loss of data
 C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\MyDrawingHelpers.h(157,55): warning C4244: '=': conversion from 'int' to 'GLfloat', possible loss of data
-C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\MyColors.h(16,39): warning C4305: 'initializing': truncation from 'double' to 'GLfloat'
-C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\MyColors.h(21,43): warning C4305: 'initializing': truncation from 'double' to 'GLfloat'
-C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\MyColors.h(24,37): warning C4305: 'initializing': truncation from 'double' to 'GLfloat'
-C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(77,1): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
-C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(78,1): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
-C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(79,1): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
-C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(90,1): warning C4305: 'initializing': truncation from 'double' to 'GLfloat'
-C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(162,19): warning C4047: 'function': 'char *' differs in levels of indirection from 'char (*)[20]'
-C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(162,10): warning C4024: 'fgets': different types for formal and actual parameter 1
-C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(194,58): warning C4020: 'insertFace': too many actual parameters
-C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(220,1): warning C4305: 'initializing': truncation from 'double' to 'GLfloat'
-C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(238,57): warning C4244: 'function': conversion from 'double' to 'GLfloat', possible loss of data
-C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(325,1): warning C4305: 'initializing': truncation from 'double' to 'GLfloat'
-C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(389,30): warning C4305: 'function': truncation from 'double' to 'GLfloat'
-C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(441,45): warning C4305: 'function': truncation from 'double' to 'GLfloat'
-C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(442,46): warning C4305: 'function': truncation from 'double' to 'GLfloat'
-C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(443,50): warning C4305: 'function': truncation from 'double' to 'GLfloat'
-C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(444,51): warning C4305: 'function': truncation from 'double' to 'GLfloat'
-C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(446,46): warning C4305: 'function': truncation from 'double' to 'GLfloat'
-C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(446,52): warning C4305: 'function': truncation from 'double' to 'GLfloat'
-C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(447,46): warning C4305: 'function': truncation from 'double' to 'GLfloat'
-C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(447,53): warning C4305: 'function': truncation from 'double' to 'GLfloat'
-C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(448,47): warning C4305: 'function': truncation from 'double' to 'GLfloat'
-C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(448,54): warning C4305: 'function': truncation from 'double' to 'GLfloat'
-C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(449,47): warning C4305: 'function': truncation from 'double' to 'GLfloat'
-C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(449,53): warning C4305: 'function': truncation from 'double' to 'GLfloat'
-C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(451,39): warning C4305: '-=': truncation from 'double' to 'GLfloat'
-C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(576,34): warning C4244: 'function': conversion from 'GLfloat' to 'int', possible loss of data
-C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(576,62): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
-C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(637,39): warning C4305: '+=': truncation from 'double' to 'GLfloat'
-C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(640,39): warning C4305: '-=': truncation from 'double' to 'GLfloat'
-C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(641,85): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
-C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(632,1): warning C4305: 'initializing': truncation from 'double' to 'const GLfloat'
-C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(661,68): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
-C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(665,68): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
-C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(729,48): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
-C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(730,48): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
-C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(731,48): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
-C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(753,15): warning C4244: 'function': conversion from 'time_t' to 'unsigned int', possible loss of data
-C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(781,27): warning C4113: 'void (__cdecl *)()' differs in parameter lists from 'void (__cdecl *)(void)'
-C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(782,21): warning C4113: 'void (__cdecl *)()' differs in parameter lists from 'void (__cdecl *)(void)'
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\MyColors.h(17,39): warning C4305: 'initializing': truncation from 'double' to 'GLfloat'
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\MyColors.h(22,43): warning C4305: 'initializing': truncation from 'double' to 'GLfloat'
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\MyColors.h(27,37): warning C4305: 'initializing': truncation from 'double' to 'GLfloat'
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(82,1): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(83,1): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(84,1): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(95,1): warning C4305: 'initializing': truncation from 'double' to 'GLfloat'
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(167,19): warning C4047: 'function': 'char *' differs in levels of indirection from 'char (*)[20]'
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(167,10): warning C4024: 'fgets': different types for formal and actual parameter 1
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(199,58): warning C4020: 'insertFace': too many actual parameters
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(225,1): warning C4305: 'initializing': truncation from 'double' to 'GLfloat'
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(327,1): warning C4305: 'initializing': truncation from 'double' to 'GLfloat'
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(417,17): warning C4305: 'function': truncation from 'double' to 'GLfloat'
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(419,17): warning C4305: 'function': truncation from 'double' to 'GLfloat'
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(464,45): warning C4305: 'function': truncation from 'double' to 'GLfloat'
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(465,46): warning C4305: 'function': truncation from 'double' to 'GLfloat'
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(466,50): warning C4305: 'function': truncation from 'double' to 'GLfloat'
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(467,51): warning C4305: 'function': truncation from 'double' to 'GLfloat'
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(469,46): warning C4305: 'function': truncation from 'double' to 'GLfloat'
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(469,52): warning C4305: 'function': truncation from 'double' to 'GLfloat'
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(470,46): warning C4305: 'function': truncation from 'double' to 'GLfloat'
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(470,53): warning C4305: 'function': truncation from 'double' to 'GLfloat'
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(471,47): warning C4305: 'function': truncation from 'double' to 'GLfloat'
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(471,54): warning C4305: 'function': truncation from 'double' to 'GLfloat'
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(472,47): warning C4305: 'function': truncation from 'double' to 'GLfloat'
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(472,53): warning C4305: 'function': truncation from 'double' to 'GLfloat'
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(474,39): warning C4305: '-=': truncation from 'double' to 'GLfloat'
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(495,38): warning C4244: 'function': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(618,34): warning C4244: 'function': conversion from 'GLfloat' to 'int', possible loss of data
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(618,62): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(626,109): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(629,78): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(630,92): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(691,39): warning C4305: '+=': truncation from 'double' to 'GLfloat'
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(694,39): warning C4305: '-=': truncation from 'double' to 'GLfloat'
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(695,85): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(686,1): warning C4305: 'initializing': truncation from 'double' to 'const GLfloat'
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(715,68): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(719,68): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(794,56): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(795,84): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(796,56): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(819,15): warning C4244: 'function': conversion from 'time_t' to 'unsigned int', possible loss of data
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(850,27): warning C4113: 'void (__cdecl *)()' differs in parameter lists from 'void (__cdecl *)(void)'
+C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Main.c(851,21): warning C4113: 'void (__cdecl *)()' differs in parameter lists from 'void (__cdecl *)(void)'
   CSCI3161_FinalProject_MariaJessen.vcxproj -> C:\Users\maria\source\repos\CSCI3161_FinalProject\CSCI3161_FinalProject_MariaJessen\Debug\CSCI3161_FinalProject_MariaJessen.exe

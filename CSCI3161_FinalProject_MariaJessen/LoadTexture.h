@@ -3,6 +3,9 @@
 #define SKY_WIDTH 896
 #define SKY_HEIGHT 385
 
+#define ALT_SKY_WIDTH 318
+#define ALT_SKY_HEIGHT 159
+
 #define SEA_WIDTH 1600
 #define SEA_HEIGHT 1200
 
@@ -12,17 +15,26 @@
 #define SKY_TEXTURE_FILENAME "sky08.ppm"
 #define SEA_TEXTURE_FILENAME "sea02.ppm"
 #define MOUNT_TEXTURE_FILENAME "mount03.ppm"
+#define ALT_SKY_TEXTURE_FILENAME "alt_sky.ppm"
 
 GLubyte* imageData;
 GLubyte skyTexture[SKY_HEIGHT][SKY_WIDTH][4];
 GLubyte seaTexture[SEA_HEIGHT][SEA_WIDTH][4];
 GLubyte mountTexture[MOUNT_HEIGHT][MOUNT_WIDTH][4];
+GLubyte altSkyTexture[ALT_SKY_HEIGHT][ALT_SKY_WIDTH][4];
 
 void addPixelToSkyTexture(int row, int column, int red, int green, int blue) {
 	skyTexture[column][row][0] = (GLubyte)red;
 	skyTexture[column][row][1] = (GLubyte)green;
 	skyTexture[column][row][2] = (GLubyte)blue;
 	skyTexture[column][row][3] = (GLubyte)1.0;
+}
+
+void addPixelToAltSkyTexture(int row, int column, int red, int green, int blue) {
+	altSkyTexture[column][row][0] = (GLubyte)red;
+	altSkyTexture[column][row][1] = (GLubyte)green;
+	altSkyTexture[column][row][2] = (GLubyte)blue;
+	altSkyTexture[column][row][3] = (GLubyte)1.0;
 }
 
 void addPixelToSeaTexture(int row, int column, int red, int green, int blue) {
@@ -101,6 +113,7 @@ void loadImage(char* filename) {
 		fscanf_s(fileID, "%d %d %d", &red, &green, &blue);
 
 		if (strcmp(filename, SKY_TEXTURE_FILENAME) == 0) addPixelToSkyTexture(row, column, red, green, blue);
+		if (strcmp(filename, ALT_SKY_TEXTURE_FILENAME) == 0) addPixelToAltSkyTexture(row, column, red, green, blue);
 		if (strcmp(filename, SEA_TEXTURE_FILENAME) == 0) addPixelToSeaTexture(row, column, red, green, blue);
 		if (strcmp(filename, MOUNT_TEXTURE_FILENAME) == 0) addPixelToMountTexture(row, column, red, green, blue);
 

@@ -9,6 +9,7 @@
 #define COLOR_CYAN { 0.0, 1.0, 1.0, 1.0 }
 #define COLOR_ROSE_TRANSPARENT { 1.0, 113.0 / 255.0, 84.0 / 255.0, 0.5 }
 #define COLOR_GREY { 0.5, 0.5, 0.5, 1.0 }
+#define COLOR_GREY_TRANSPARENT { 0.5, 0.5, 0.5, 0.5 }
 #define COLOR_DARK_GREEN { 15.0/255.0, 115.0/255.0, 0.0, 1.0 }
 
 GLfloat color_array_yellow[4] = COLOR_YELLOW;
@@ -21,4 +22,8 @@ GLfloat color_array_cyan[4] = COLOR_CYAN;
 GLfloat color_array_rose_transparent[4] = COLOR_ROSE_TRANSPARENT;
 GLfloat color_array_white[4] = COLOR_WHITE;
 GLfloat color_array_grey[4] = COLOR_GREY;
+GLfloat color_array_grey_transparent[4] = COLOR_GREY_TRANSPARENT;
+
 GLfloat color_array_dark_green[4] = COLOR_DARK_GREEN;
+
+GLfloat color_array_white_scene[4] = COLOR_WHITE;

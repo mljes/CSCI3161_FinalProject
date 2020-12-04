@@ -42,10 +42,15 @@ GLboolean fogMode = GL_TRUE;
 GLboolean mountainTexturedMode = GL_FALSE;
 GLboolean showMountains = GL_FALSE;
 GLboolean showSnow = GL_FALSE;
+GLboolean snowIsAccumulating = GL_FALSE;
 
 GLuint skyTextureID;
 GLuint seaTextureID;
 GLuint mountTextureID;
+GLuint altSkyTextureID;
+
+GLfloat snowDensityPlane = 0.0;
+GLfloat snowDensityMountains = 0.0;
 
 int specialPart = 1;
 
@@ -232,13 +237,10 @@ void drawVertexWithTexture(struct Point points[MOUNTAIN_RESOLUTION][MOUNTAIN_RES
 
 void drawMountain(struct Mountain mountain) {
 	int i, j;
-
 	glPushMatrix();
 	
-	glTranslatef(mountain.xOffset, -pow(mountain.peak, 0.5), mountain.zOffset);
-
 	glScalef(mountain.xScale, mountain.yScale, mountain.zScale);
-	
+	glTranslatef(mountain.xOffset, -(mountain.peak / 2), mountain.zOffset);
 	setMaterialProperties(color_array_white, color_array_white, color_array_white, 0);
 
 	if (mountainTexturedMode) {
@@ -382,11 +384,11 @@ void drawAxes() {
 	drawSphere(0.5, sphereColor);
 }
 
-void drawFog() {
+void drawFog(GLfloat density, GLfloat color[4]) {
 	glEnable(GL_FOG);
-	glFogfv(GL_FOG_COLOR, color_array_rose_transparent);
+	glFogfv(GL_FOG_COLOR, color);
 	glFogf(GL_FOG_MODE, GL_EXP);
-	glFogf(GL_FOG_DENSITY, 0.005);
+	glFogf(GL_FOG_DENSITY, density);
 }
 
 void drawSceneryCylinder() {
@@ -410,16 +412,37 @@ void drawSceneryCylinder() {
 	glEnable(GL_TEXTURE_2D);
 	glRotatef(270.0, 1.0, 0.0, 0.0);
 
-	if (fogMode) drawFog();
+	if (fogMode) {
+		if (color_array_white_scene[3] > 0)
+			drawFog(0.005, color_array_rose_transparent);
+		else
+			drawFog(0.005, color_array_grey_transparent);
+	}
+
 	glBindTexture(GL_TEXTURE_2D, seaTextureID);
 	gluDisk(diskPtr, 0.0, 600, 100, 100);
 	glDisable(GL_FOG);
 
 	glTranslatef(0.0, -10.0, 0.0);
-	glBindTexture(GL_TEXTURE_2D, skyTextureID);
-	gluCylinder(cylinderPtr, SCENE_RADIUS, SCENE_RADIUS, SCENE_HEIGHT, 100, 200);
-	
+
+	if (showSnow) {
+		setMaterialProperties(color_array_white, color_array_white, color_array_white, 100);
+		glBindTexture(GL_TEXTURE_2D, altSkyTextureID);
+		gluCylinder(cylinderPtr, SCENE_RADIUS + 1, SCENE_RADIUS + 1, SCENE_HEIGHT, 100, 200);
+		
+		glEnable(GL_COLOR_MATERIAL);
+		glColor4fv(color_array_white_scene);
+	}
+
+	if (color_array_white_scene[3] > 0) {
+		setMaterialProperties(color_array_white_scene, color_array_white_scene, color_array_white_scene, 100);
+		glBindTexture(GL_TEXTURE_2D, skyTextureID);
+		gluCylinder(cylinderPtr, SCENE_RADIUS, SCENE_RADIUS, SCENE_HEIGHT, 100, 200);
+	}
+
+	glDisable(GL_COLOR_MATERIAL);
 	glDisable(GL_TEXTURE_2D);
+	
 	glPopMatrix();
 }
 
@@ -451,12 +474,27 @@ void drawSnowflakes() {
 		snowflakes[i].center.vertex_y -= 0.1;
 
 		if (snowflakes[i].center.vertex_y <= 5.0) {
+			snowIsAccumulating = GL_TRUE;
 			snowflakes[i].center.vertex_y = snowflakes[i].initialHeight;
 		}
 	}
 
 	glEnd();
 	glPopMatrix();
+}
+
+void drawInfoText() {
+	setMaterialProperties(color_array_green, color_array_green, color_array_green, 200);
+
+	GLfloat startingX = cameraPosition[0];
+
+	char text[4] = "FUCK";
+
+	int i;
+	for (i = 0; i < 4; i++) {
+		glRasterPos3f(startingX + (0.5 * i), cameraPosition[1], cameraPosition[2] - 20);
+		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, text[i]);
+	}
 }
 
 void myDisplay() {
@@ -492,8 +530,6 @@ void myDisplay() {
 	
 	glPushMatrix();
 
-	
-
 	// Rotate the scene (except for the plane and camera) to simulate plane turns
 	glTranslatef(cameraPosition[0], cameraPosition[1], cameraPosition[2]);
 	glTranslatef(0.0, 0.0, planeTravel);
@@ -509,10 +545,12 @@ void myDisplay() {
 	}
 
 	if (showMountains) {
+		if (showSnow) drawFog(snowDensityMountains, color_array_white);
 		drawMountain(mountain1);
 		drawMountain(mountain2);
 		drawMountain(mountain3);
 		drawMountain(mountain4);
+		glDisable(GL_FOG);
 	}
 
 	glPopMatrix();
@@ -523,7 +561,9 @@ void myDisplay() {
 	glRotatef(270.0, 0.0, 1.0, 0.0);
 	glRotatef(planeRollDeg, 1.0, 0.0, 0.0);
 	glScalef(0.5, 0.5, 0.5);
+	if (showSnow) drawFog(snowDensityPlane, color_array_white);
 	drawCessna();
+	glDisable(GL_FOG);
 
 	glPushMatrix();
 	glTranslatef(-propellerToOrigin[0], -propellerToOrigin[1], -propellerToOrigin[2]);
@@ -544,6 +584,8 @@ void myDisplay() {
 	if (showSnow) {
 		drawSnowflakes();
 	}
+
+	drawInfoText();
 
 	glutSwapBuffers(); // send drawing information to OpenGL
 }
@@ -580,6 +622,13 @@ void myIdle() {
 
 	if (showSnow) {
 		snowflakeFallDelta -= 10.0;
+
+		color_array_white_scene[3] = color_array_white_scene[3] <= 0.0 ? 0.0 : (color_array_white_scene[3] - 0.01);
+
+		if (snowIsAccumulating) {
+			snowDensityPlane = snowDensityPlane >= 1.0 ? 1.0 : snowDensityPlane + 0.01;
+			snowDensityMountains = snowDensityMountains >= 1.0 ? 1.0 : snowDensityMountains + 0.0001;
+		}
 	}
 
 	planeTravel += planeForwardDelta;
@@ -624,6 +673,11 @@ void myKeyboard(unsigned char key, int x, int y) {
 		break;
 	case 'x':
 		showSnow = !showSnow;
+		if (!showSnow) {
+			snowIsAccumulating = GL_FALSE;
+			snowDensityMountains = 0.0;
+			snowDensityPlane = 0.0;
+		}
 		break;
 	}
 }
@@ -693,6 +747,17 @@ void initSkyTexture() {
 	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, SKY_WIDTH, SKY_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, skyTexture);
 }
 
+void initAltSkyTexture() {
+	glGenTextures(1, &altSkyTextureID);
+
+	glBindTexture(GL_TEXTURE_2D, altSkyTextureID);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, ALT_SKY_WIDTH, ALT_SKY_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, altSkyTexture);
+}
+
 void initSeaTexture() {
 	glGenTextures(1, &seaTextureID);
 
@@ -726,9 +791,9 @@ void initMountain(struct Mountain* mountain, int mountainID) {
 	mountain->xOffset = (float)((rand() % 101) - 50.0);
 	mountain->zOffset = (float)((rand() % 101) - 50.0);
 
-	mountain->xScale = (float)(rand() % 11) / 10.0;
-	mountain->yScale = (float)(rand() % 11) / 10.0;
-	mountain->zScale = (float)(rand() % 11) / 10.0;
+	mountain->xScale = ((float)(rand() % 10) + 1.0) / 10.0;
+	mountain->yScale = mountain-> peak > 30 ? 0.2 : ((float)(rand() % 5) + 1.0) / 10.0;
+	mountain->zScale = ((float)(rand() % 10) + 1.0) / 10.0;
 }
 
 void initializeGL() {
@@ -747,6 +812,7 @@ void initializeGL() {
 	initSkyTexture();
 	initSeaTexture();
 	initMountainTexture();
+	initAltSkyTexture();
 }
 
 void main(int argc, char** argv) {
@@ -762,6 +828,9 @@ void main(int argc, char** argv) {
 
 	printf("LOADING MOUNTAIN TEXTURE...\n");
 	loadImage(MOUNT_TEXTURE_FILENAME);
+
+	printf("LOADING ALTERNATE SKY TEXTURE...\n");
+	loadImage(ALT_SKY_TEXTURE_FILENAME);
 
 	setPropellerOffsets();
 
