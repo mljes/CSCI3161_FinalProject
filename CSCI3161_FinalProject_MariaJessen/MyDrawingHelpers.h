@@ -11,7 +11,8 @@
 #define MOUNTAIN_START_LEVEL 6
 #define MOUNTAIN_RESOLUTION 64
 
-#define MAX_SNOWFLAKES 100
+#define MAX_SNOWFLAKES 1000
+#define MAX_RAINDROPS 1000
 
 #define SCENE_RADIUS 428
 #define SCENE_HEIGHT 385
@@ -63,7 +64,17 @@ struct Snowflake {
 	GLfloat initialHeight;
 };
 
-struct Snowflake snowflakes[100];
+struct Raindrop {
+	struct Point bottom;
+	GLfloat initialHeight;
+	GLfloat length;
+	GLfloat rippleRadius;
+	GLfloat rippleOpacity;
+	GLboolean showRipple;
+};
+
+struct Snowflake snowflakes[MAX_SNOWFLAKES];
+struct Raindrop raindrops[MAX_RAINDROPS];
 
 void getLowestCoordinates(struct Point point, GLfloat lowestCoords[3]) {
 	lowestCoords[0] = point.vertex_x <= lowestCoords[0] ? point.vertex_x : lowestCoords[0];
@@ -152,9 +163,28 @@ void generateMountainGrid(int mountainID, struct Point point1, struct Point poin
 void generateSnowFlakes() {
 	int i;
 	for (i = 0; i < MAX_SNOWFLAKES; i++) {
-		snowflakes[i].center.vertex_x = (rand() % (40)) - 20;
-		snowflakes[i].center.vertex_y = (rand() % 20) + cameraPosition[1] + 20;
-		snowflakes[i].center.vertex_z = (rand() % (40)) - 20;
+		snowflakes[i].center.vertex_x = (rand() % (401)) - 200;
+		snowflakes[i].center.vertex_y = (rand() % 200) + 20;
+		snowflakes[i].center.vertex_z = (rand() % (400)) - 200;
 		snowflakes[i].initialHeight = snowflakes[i].center.vertex_y;
+	}
+}
+
+void generateRainDrops() {
+	int i, j;
+	for (i = 0; i < MAX_RAINDROPS; i++) {
+		// same logic as for snowflakes - set initial height and values for bottom of raindrop
+		raindrops[i].bottom.vertex_x = (rand() % (401)) - 200;
+		raindrops[i].bottom.vertex_y = (rand() % 200) + 20;
+		raindrops[i].bottom.vertex_z = (rand() % (401)) - 200;
+
+		raindrops[i].initialHeight = raindrops[i].bottom.vertex_y;
+
+		//give each raindrop a very small tail
+		raindrops[i].length = (float)(rand() % 51) / 100.0;
+
+		raindrops[i].rippleRadius = 0.0;
+		raindrops[i].rippleOpacity = 0.5;
+		raindrops[i].showRipple = GL_FALSE;
 	}
 }
