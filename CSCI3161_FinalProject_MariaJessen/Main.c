@@ -48,6 +48,7 @@ GLboolean showMountains = GL_FALSE;
 GLboolean showSnow = GL_FALSE;
 GLboolean snowIsAccumulating = GL_FALSE;
 GLboolean showRain = GL_FALSE;
+GLboolean transitionSkyToClear = GL_FALSE;
 
 GLuint skyTextureID;
 GLuint seaTextureID;
@@ -433,7 +434,7 @@ void drawSceneryCylinder() {
 
 	glTranslatef(0.0, -10.0, 0.0);
 
-	if (showSnow || showRain) {
+	if (showSnow || showRain || transitionSkyToClear) {
 		setMaterialProperties(color_array_white, color_array_white, color_array_white, 100);
 		glBindTexture(GL_TEXTURE_2D, altSkyTextureID);
 		gluCylinder(cylinderPtr, SCENE_RADIUS + 1, SCENE_RADIUS + 1, SCENE_HEIGHT, 100, 200);
@@ -462,13 +463,45 @@ void drawSnowflakeArm(struct Point center, GLfloat endX, GLfloat endY) {
 	glVertex3f(center.vertex_x + endX, center.vertex_y + endY, center.vertex_z);
 }
 
+void drawRipples(GLfloat xPos, GLfloat zPos, GLfloat opacity, GLfloat radius) {
+	int i;
+
+	glPushMatrix();
+	glTranslatef(xPos, 0.01, zPos);
+
+	glEnable(GL_COLOR_MATERIAL);
+	glColor4f(color_array_grey[0], color_array_grey[1], color_array_grey[2], opacity);
+
+	glBegin(GL_LINE_STRIP);
+
+	// Draw the top half of the circle using the circle formula
+	for (i = (-radius * 100.0); i <= (radius * 100.0); i++) {
+		GLfloat xPos = i / 100.0;
+		GLfloat zPos = radius * sqrtf(1 - ((xPos / radius) * (xPos / radius))); // calculate z pos using circle formula
+
+		glVertex3f(xPos, 0.0, zPos); // draw a vertex in the line strip
+	}
+	// Draw bottom half of circle
+	for (i = (radius * 100.0); i >= (-radius * 100.0); i--) {
+		GLfloat xPos = i / 100.0;
+		GLfloat zPos = -radius * sqrtf(1 - ((xPos / radius) * (xPos / radius))); // calculate z pos using circle formula
+
+		glVertex3f(xPos, 0.0, zPos); // draw a vertex in the line strip
+	}
+
+	glEnd();
+	glDisable(GL_COLOR_MATERIAL);
+	glPopMatrix();
+}
+
 void drawSnowflakes() {
 	int i; 
 	glPushMatrix();
 	setMaterialProperties(color_array_white, color_array_white, color_array_white, 200);
-	glBegin(GL_LINES);
 
 	for (i = 0; i < MAX_SNOWFLAKES; i++) {
+		glBegin(GL_LINES);
+
 		drawSnowflakeArm(snowflakes[i].center, 0.1, 0.0);
 		drawSnowflakeArm(snowflakes[i].center, -0.1, 0.0);
 		drawSnowflakeArm(snowflakes[i].center, 0.0, 0.1);
@@ -479,46 +512,21 @@ void drawSnowflakes() {
 		drawSnowflakeArm(snowflakes[i].center, -0.06, -0.06);
 		drawSnowflakeArm(snowflakes[i].center, -0.06, 0.06);
 
+		glEnd();
+
 		snowflakes[i].center.vertex_y -= 0.1;
 
-		if (snowflakes[i].center.vertex_y <= 5.0) {
+		if (snowflakes[i].center.vertex_y <= 0.0) {
 			snowIsAccumulating = GL_TRUE;
+			snowflakes[i].showRipple = GL_TRUE;
 			snowflakes[i].center.vertex_y = snowflakes[i].initialHeight;
+		}
+
+		if (snowflakes[i].showRipple) {
+			drawRipples(snowflakes[i].center.vertex_x, snowflakes[i].center.vertex_z, snowflakes[i].rippleOpacity, snowflakes[i].rippleRadius);
 		}
 	}
 
-	glEnd();
-	glPopMatrix();
-}
-
-void drawRipples(struct Raindrop raindrop) {
-	int i;
-
-	glPushMatrix();
-	glTranslatef(raindrop.bottom.vertex_x, 0.01, raindrop.bottom.vertex_z);
-
-	glEnable(GL_COLOR_MATERIAL);
-	glColor4f(color_array_grey[0], color_array_grey[1], color_array_grey[2], raindrop.rippleOpacity);
-
-	glBegin(GL_LINE_STRIP);
-	
-	// Draw the top half of the circle using the circle formula
-	for (i = (-raindrop.rippleRadius * 100.0); i <= (raindrop.rippleRadius * 100.0); i++) {
-		GLfloat xPos = i / 100.0;
-		GLfloat zPos = raindrop.rippleRadius * sqrtf(1 - ((xPos / raindrop.rippleRadius) * (xPos / raindrop.rippleRadius))); // calculate z pos using circle formula
-
-		glVertex3f(xPos, 0.0, zPos); // draw a vertex in the line strip
-	}
-	// Draw bottom half of circle
-	for (i = (raindrop.rippleRadius * 100.0); i >= (-raindrop.rippleRadius * 100.0); i--) {
-		GLfloat xPos = i / 100.0;
-		GLfloat zPos = -raindrop.rippleRadius * sqrtf(1 - ((xPos / raindrop.rippleRadius) * (xPos / raindrop.rippleRadius))); // calculate z pos using circle formula
-
-		glVertex3f(xPos, 0.0, zPos); // draw a vertex in the line strip
-	}
-
-	glEnd();
-	glDisable(GL_COLOR_MATERIAL);
 	glPopMatrix();
 }
 
@@ -544,13 +552,14 @@ void drawRaindrops() {
 		glEnd();
 
 		raindrops[i].bottom.vertex_y -= 0.5;
+
 		if (raindrops[i].bottom.vertex_y <= 0.0) {
 			raindrops[i].showRipple = GL_TRUE;
 			raindrops[i].bottom.vertex_y = raindrops[i].initialHeight;
 		}
 
 		if (raindrops[i].showRipple) {
-			drawRipples(raindrops[i]);
+			drawRipples(raindrops[i].bottom.vertex_x, raindrops[i].bottom.vertex_z, raindrops[i].rippleOpacity, raindrops[i].rippleRadius);
 		}
 	}
 	glLineWidth(1.0);
@@ -681,6 +690,17 @@ void myDisplay() {
 	glutSwapBuffers(); // send drawing information to OpenGL
 }
 
+void updateRippleRadius(GLfloat * radius, GLfloat * opacity, GLboolean * showRipple) {
+	*radius += 0.01;
+	*opacity -= 0.01;
+
+	if (*opacity <= 0.0) {
+		*radius = 0.0;
+		*opacity = 0.5;
+		*showRipple = GL_FALSE;
+	}
+}
+
 void myIdle() {
 	propellerRotationDeg += 15.0;
 
@@ -711,8 +731,19 @@ void myIdle() {
 		break;
 	}
 
-	if (showSnow || showRain)
+	if (showSnow || showRain) {
 		color_array_white_scene[3] = color_array_white_scene[3] <= 0.0 ? 0.0 : (color_array_white_scene[3] - 0.01);
+	}
+
+	else if (transitionSkyToClear) {
+		if (color_array_white_scene[3] >= 1.0) {
+			color_array_white_scene[3] = 1.0;
+			transitionSkyToClear = GL_FALSE;
+		}
+		else {
+			color_array_white_scene[3] += 0.01;
+		}
+	}
 
 	if (showSnow) {
 		snowflakeFallDelta -= 10.0;
@@ -720,6 +751,13 @@ void myIdle() {
 		if (snowIsAccumulating) {
 			snowDensityPlane = snowDensityPlane >= 1.0 ? 1.0 : snowDensityPlane + 0.01;
 			snowDensityMountains = snowDensityMountains >= 1.0 ? 1.0 : snowDensityMountains + 0.0001;
+		}
+
+		int i, j;
+		for (i = 0; i < MAX_SNOWFLAKES; i++) {
+			if (snowflakes[i].showRipple) {
+				updateRippleRadius(&snowflakes[i].rippleRadius, &snowflakes[i].rippleOpacity, &snowflakes[i].showRipple);
+			}
 		}
 	}
 
@@ -730,14 +768,7 @@ void myIdle() {
 		int i, j;
 		for (i = 0; i < MAX_RAINDROPS; i++) {
 			if (raindrops[i].showRipple) {
-				raindrops[i].rippleRadius += 0.01;
-				raindrops[i].rippleOpacity -= 0.01;
-
-				if (raindrops[i].rippleOpacity <= 0.0) {
-					raindrops[i].rippleRadius = 0.0;
-					raindrops[i].rippleOpacity = 0.5;
-					raindrops[i].showRipple = GL_FALSE;
-				}
+				updateRippleRadius(&raindrops[i].rippleRadius, &raindrops[i].rippleOpacity, &raindrops[i].showRipple);
 			}
 		}
 	}
@@ -786,7 +817,8 @@ void myKeyboard(unsigned char key, int x, int y) {
 			snowIsAccumulating = GL_FALSE;
 			snowDensityMountains = 0.0;
 			snowDensityPlane = 0.0;
-			color_array_white_scene[3] = 1.0;
+			//color_array_white_scene[3] = 1.0;
+			transitionSkyToClear = GL_TRUE;
 		}
 		break;
 	case 'r':
@@ -797,7 +829,8 @@ void myKeyboard(unsigned char key, int x, int y) {
 		else {
 			GLint mountainShine = 0;
 			GLint planeShine = 50;
-			color_array_white_scene[3] = 1.0;
+			//color_array_white_scene[3] = 1.0;
+			transitionSkyToClear = GL_TRUE;
 		}
 	}
 }

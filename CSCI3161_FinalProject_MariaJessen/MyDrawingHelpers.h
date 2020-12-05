@@ -11,8 +11,8 @@
 #define MOUNTAIN_START_LEVEL 6
 #define MOUNTAIN_RESOLUTION 64
 
-#define MAX_SNOWFLAKES 1000
-#define MAX_RAINDROPS 1000
+#define MAX_SNOWFLAKES 1500
+#define MAX_RAINDROPS 1500
 
 #define SCENE_RADIUS 428
 #define SCENE_HEIGHT 385
@@ -62,6 +62,9 @@ GLfloat rightPropellerToOrigin[3];
 struct Snowflake {
 	struct Point center;
 	GLfloat initialHeight;
+	GLfloat rippleRadius;
+	GLfloat rippleOpacity;
+	GLfloat showRipple;
 };
 
 struct Raindrop {
@@ -97,6 +100,20 @@ void setPropellerOffsets() {
 
 int mountainRow = 0;
 int mountainCol = 0;
+
+void resetSnowflakeHeights() {
+	int i;
+	for (i = 0; i < MAX_SNOWFLAKES; i++) {
+		snowflakes[i].center.vertex_y = snowflakes[i].initialHeight;
+	}
+}
+
+void resetRaindropHeights() {
+	int i;
+	for (i = 0; i < MAX_RAINDROPS; i++) {
+		raindrops[i].bottom.vertex_y = raindrops[i].initialHeight;
+	}
+}
 
 void generateMountainGrid(int mountainID, struct Point point1, struct Point point2, struct Point point3, struct Point point4, int level) {
 	struct Point mid0;
@@ -160,6 +177,12 @@ void generateMountainGrid(int mountainID, struct Point point1, struct Point poin
 	}
 }
 
+void resetRippleValues(GLfloat * radius, GLfloat * opacity, GLboolean * visibility) {
+	*radius = (GLfloat)0.0;
+	*opacity = (GLfloat)0.5;
+	visibility = GL_FALSE;
+}
+
 void generateSnowFlakes() {
 	int i;
 	for (i = 0; i < MAX_SNOWFLAKES; i++) {
@@ -167,6 +190,8 @@ void generateSnowFlakes() {
 		snowflakes[i].center.vertex_y = (rand() % 200) + 20;
 		snowflakes[i].center.vertex_z = (rand() % (400)) - 200;
 		snowflakes[i].initialHeight = snowflakes[i].center.vertex_y;
+
+		resetRippleValues(&snowflakes[i].rippleRadius, &snowflakes[i].rippleOpacity, &snowflakes[i].showRipple);
 	}
 }
 
@@ -183,8 +208,6 @@ void generateRainDrops() {
 		//give each raindrop a very small tail
 		raindrops[i].length = (float)(rand() % 51) / 100.0;
 
-		raindrops[i].rippleRadius = 0.0;
-		raindrops[i].rippleOpacity = 0.5;
-		raindrops[i].showRipple = GL_FALSE;
+		resetRippleValues(&raindrops[i].rippleRadius, &raindrops[i].rippleOpacity, &raindrops[i].showRipple);
 	}
 }
