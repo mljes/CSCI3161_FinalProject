@@ -626,14 +626,8 @@ void myDisplay() {
 	glPolygonMode(GL_FRONT_AND_BACK, polygonMode);
 
 	gluLookAt(cameraPosition[0], cameraPosition[1], cameraPosition[2],
-				cameraFocusPoint[0], cameraFocusPoint[1], cameraFocusPoint[2],
-				cameraUpVector[0], cameraUpVector[1], cameraUpVector[2]);
-	
-	glPointSize(20.0);
-	setMaterialProperties(color_array_red, color_array_red, color_array_red, 50);
-	glBegin(GL_POINTS);
-	glVertex3fv(cameraFocusPoint);
-	glEnd();
+		cameraFocusPoint[0], cameraFocusPoint[1], cameraFocusPoint[2],
+		cameraUpVector[0], cameraUpVector[1], cameraUpVector[2]);
 
 	glPushMatrix();
 
@@ -697,10 +691,10 @@ void myDisplay() {
 }
 
 void myIdle() {
+	double centreMouseBoundary = windowWidth / 2;
+	
 	GLfloat xOffsetPlane = (centreMouseBoundary - oldMouseX) / windowWidth;
 	planeYawAngle -= xOffsetPlane / (planeForwardDelta * 10);
-
-	printf("NEW YAW: %f\n", planeYawAngle);
 
 	GLfloat xOffsetCamera = sin(planeYawAngle * M_PI / 180.0) * planeForwardDelta;
 	GLfloat zOffsetCamera = cos(planeYawAngle * M_PI / 180.0) * planeForwardDelta;
@@ -711,17 +705,13 @@ void myIdle() {
 	planeToCameraOffset[0] = sin(planeYawAngle * M_PI / 180.0) * 2.0;
 	planeToCameraOffset[2] = cos(planeYawAngle * M_PI / 180.0) * -2.0;
 
-	planeRollDeg = abs(planeYawAngle) < 45.0 ? -planeYawAngle : planeRollDeg;
+	planeRollDeg = abs(xOffsetPlane * 50) < 45.0 ? (xOffsetPlane * 50) : planeRollDeg;
 
 	cameraFocusPoint[0] = cameraPosition[0] + sin(planeYawAngle * M_PI / 180.0) * 50;
 	cameraFocusPoint[2] = cameraPosition[2] + cos(planeYawAngle * M_PI / 180.0) * -50;
 
-	printf("CAMERA: X: %f X: %f\n", cameraPosition[0], cameraPosition[2]);
-	printf("FOCUS: X: %f Z: %f\n", cameraFocusPoint[0], cameraFocusPoint[2]);
-
 	propellerRotationDeg += 15.0;
 
-	double centreMouseBoundary = windowWidth / 2;
 
 	if (showSnow || showRain) {
 		color_array_white_scene[3] = color_array_white_scene[3] <= 0.0 ? 0.0 : (color_array_white_scene[3] - 0.01);
@@ -861,9 +851,6 @@ void myPassiveMotion(int x, int y) {
 	else {
 		currentPlaneDirection = DIRECTION_GO_STRAIGHT;
 	}
-
-	printf("MOUSE X: %d\tANGLE: %f\n", x, planeYawAngle);
-	
 }
 
 void myReshape(int newWidth, int newHeight) {
