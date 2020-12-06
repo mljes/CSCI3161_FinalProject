@@ -20,65 +20,70 @@ Flight simulator. Allows user to travel through a scene using the mouse and keyb
 
 #define M_PI 3.14159265358979323846
 
+// Keyboard numbers for special keys
 #define KEY_PAGE_UP 104
 #define KEY_PAGE_DOWN 105
 #define KEY_ARROW_UP 101
 #define KEY_ARROW_DOWN 103
 
-#define SPEED_INCREMENT 0.2
 
+#define SPEED_INCREMENT 0.2 // Amount to increase/decrease plane speed by
+
+// Initial window dimensions
 int windowWidth = 800;
 int windowHeight = 800;
 
-GLenum polygonMode = GL_LINE;
+GLenum polygonMode = GL_LINE; // used for toggling between wireframe and filled modes
 
-const GLint gridSize = 500;
-const GLfloat gridSectionWidth = 2.0;
+const GLint gridSize = 500; // length of grid, in squares
+const GLfloat gridSectionWidth = 2.0; // length of each square in grid
 
 GLboolean isFullscreen = GL_FALSE;
 
-GLfloat propellerRotationDeg = 0.0;
-GLfloat sceneRotationDeg = 0.0;
-GLfloat sceneRotationDelta = 0.0;
+GLfloat propellerRotationDeg = 0.0; // amount to rotate by when drawing propeller
 
-GLfloat planeToCameraOffset[3] = { 0.0, -1.0, -2.0 };
+GLfloat planeToCameraOffset[3] = { 0.0, -1.0, -2.0 }; // used to draw plane a little in front of and below camera
 
-GLfloat planeForwardDelta = SPEED_INCREMENT;
-GLfloat planeTravel = 0.0;
+GLfloat planeForwardDelta = SPEED_INCREMENT; // amount that plane will travel by at each frame
 
-GLfloat planeRollDeg = 0.0;
+GLfloat planeRollDeg = 0.0; // amount of roll to apply to the plane (rotation about the fuselage)
 
-GLint currentPlaneDirection = DIRECTION_GO_STRAIGHT;
+GLboolean simpleSceneMode = GL_TRUE;        // indicates whether to draw simple square scene or the sky/sea cylinder
+GLboolean fogMode = GL_TRUE;                // indicates whether to draw fog on the water
+GLboolean mountainTexturedMode = GL_FALSE;  // indates whether to draw the mountains with textures or just coloring
+GLboolean showMountains = GL_FALSE;         // indicates whether to draw the mountains
+GLboolean showSnow = GL_FALSE;              // indicates whether to draw snowflakes and show the alternate sky
+GLboolean snowIsAccumulating = GL_FALSE;    // indicates whether to draw fog on mountains and plane to simulate snow accumulation
+GLboolean showRain = GL_FALSE;              // indicates whether to draw raindrops and show the alternate sky
+GLboolean transitionSkyToClear = GL_FALSE;  // indicates whether we are fading the regular sky back into view
 
-GLboolean simpleSceneMode = GL_TRUE;
-GLboolean fogMode = GL_TRUE;
-GLboolean mountainTexturedMode = GL_FALSE;
-GLboolean showMountains = GL_FALSE;
-GLboolean showSnow = GL_FALSE;
-GLboolean snowIsAccumulating = GL_FALSE;
-GLboolean showRain = GL_FALSE;
-GLboolean transitionSkyToClear = GL_FALSE;
-
-GLuint skyTextureID;
+// texture IDs for when we want to bind textures
+GLuint skyTextureID; 
 GLuint seaTextureID;
 GLuint mountTextureID;
 GLuint altSkyTextureID;
 
+// Density of fog to simulate snow accumulation
 GLfloat snowDensityPlane = 0.0;
 GLfloat snowDensityMountains = 0.0;
 
+// Amount of shine on mountain and plane materials
 GLint mountainShine = 0;
 GLint planeShine = 50;
 
-int specialPart = 1;
-
+// Amount to translate to draw snowflakes
 GLfloat snowflakeFallDelta = 0.0;
 
+// Amount to rotate the plane (about the Y axis of the plane itself)
 GLfloat planeYawAngle = 0.0;
 
+// Previous mouse position
 GLfloat oldMouseX = -1;
+
+// Centre of window in terms of X
 GLfloat centreMouseBoundary = 400;
 
+// Density of grey fog (shown during rain and snow)
 GLfloat snowFogDensity = 0.0;
 
 void setMaterialProperties(GLfloat diffuse[4], GLfloat ambient[4], GLfloat specular[4], GLfloat shine) {
@@ -119,11 +124,6 @@ void setMountainPointColors(GLfloat peak, GLfloat colors[MOUNTAIN_RESOLUTION][MO
 void setPartColor(int partIndex) {
 	GLfloat ambientColor[] = { 0.1, 0.1, 0.1, 1.0 };
 	GLfloat specularColor[] = { 1.0, 1.0, 1.0, 1.0 };
-
-	if (partIndex == specialPart) {
-		setMaterialProperties(color_array_red, ambientColor, specularColor, 50);
-		return;
-	}
 
 	if (partIndex <= 3) {
 		setMaterialProperties(color_array_yellow, ambientColor, specularColor, 50);
@@ -813,8 +813,6 @@ void myIdle() {
 		}
 	}
 
-	planeTravel += planeForwardDelta;
-
 	glutPostRedisplay();
 }
 
@@ -897,16 +895,7 @@ void mySpecialKeyboard(int key, int x, int y) {
 }
 
 void myPassiveMotion(int x, int y) {
-	oldMouseX = x;
-
-	centreMouseBoundary = (windowWidth / 2);
-
-	if (x != centreMouseBoundary) {
-		currentPlaneDirection = x > centreMouseBoundary ? DIRECTION_GO_RIGHT : DIRECTION_GO_LEFT;
-	}
-	else {
-		currentPlaneDirection = DIRECTION_GO_STRAIGHT;
-	}
+	oldMouseX = x; // save the current x position so we can use it to calculate the angle to turn by in idle function
 }
 
 void myReshape(int newWidth, int newHeight) {
