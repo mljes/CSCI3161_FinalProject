@@ -404,25 +404,16 @@ void drawFog(GLfloat density, GLfloat color[4]) {
 	glFogf(GL_FOG_DENSITY, density);
 }
 
-void drawSceneryCylinder() {
-	
-	GLUquadricObj *diskPtr, *cylinderPtr;
+void drawWater(int quadricDrawingStyle) {
+	GLUquadricObj* diskPtr;
 	diskPtr = gluNewQuadric();
-	cylinderPtr = gluNewQuadric();
-
-	int quadricDrawingStyle = polygonMode == GL_LINE ? GLU_LINE : GLU_FILL;
 
 	gluQuadricDrawStyle(diskPtr, quadricDrawingStyle);
 	gluQuadricNormals(diskPtr, GLU_SMOOTH);
 	gluQuadricTexture(diskPtr, GL_TRUE);
 
-	gluQuadricDrawStyle(cylinderPtr, quadricDrawingStyle);
-	gluQuadricNormals(cylinderPtr, GLU_SMOOTH);
-	gluQuadricTexture(cylinderPtr, GL_TRUE);
-	
-	glPushMatrix();
-	setMaterialProperties(color_array_white, color_array_white, color_array_white, 100);
 	glEnable(GL_TEXTURE_2D);
+	setMaterialProperties(color_array_white, color_array_white, color_array_white, 100);
 	glRotatef(270.0, 1.0, 0.0, 0.0);
 
 	if (fogMode) {
@@ -435,14 +426,25 @@ void drawSceneryCylinder() {
 	glBindTexture(GL_TEXTURE_2D, seaTextureID);
 	gluDisk(diskPtr, 0.0, 600, 100, 100);
 	glDisable(GL_FOG);
+}
+
+void drawSky(int quadricDrawingStyle) {
+	GLUquadricObj* cylinderPtr;
+	cylinderPtr = gluNewQuadric();
+
+	gluQuadricDrawStyle(cylinderPtr, quadricDrawingStyle);
+	gluQuadricNormals(cylinderPtr, GLU_SMOOTH);
+	gluQuadricTexture(cylinderPtr, GL_TRUE);
 
 	glTranslatef(0.0, -10.0, 0.0);
+
+	glEnable(GL_TEXTURE_2D);
 
 	if (showSnow || showRain || transitionSkyToClear) {
 		setMaterialProperties(color_array_white, color_array_white, color_array_white, 100);
 		glBindTexture(GL_TEXTURE_2D, altSkyTextureID);
 		gluCylinder(cylinderPtr, SCENE_RADIUS + 1, SCENE_RADIUS + 1, SCENE_HEIGHT, 100, 200);
-		
+
 		glEnable(GL_COLOR_MATERIAL);
 		glColor4fv(color_array_white_scene);
 	}
@@ -455,7 +457,14 @@ void drawSceneryCylinder() {
 
 	glDisable(GL_COLOR_MATERIAL);
 	glDisable(GL_TEXTURE_2D);
+}
+
+void drawSceneryCylinder() {
+	int quadricDrawingStyle = polygonMode == GL_LINE ? GLU_LINE : GLU_FILL;
 	
+	glPushMatrix();
+	drawWater(quadricDrawingStyle);
+	drawSky(quadricDrawingStyle);
 	glPopMatrix();
 }
 
