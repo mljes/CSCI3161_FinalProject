@@ -501,22 +501,36 @@ void drawRipples(GLfloat xPos, GLfloat zPos, GLfloat opacity, GLfloat radius) {
 void drawSnowflakes() {
 	int i; 
 	glPushMatrix();
-	setMaterialProperties(color_array_white, color_array_white, color_array_white, 200);
+	
 
 	for (i = 0; i < MAX_SNOWFLAKES; i++) {
+		glPushMatrix();
 		glBegin(GL_LINES);
+		setMaterialProperties(color_array_white, color_array_white, color_array_white, 200);
 
-		drawSnowflakeArm(snowflakes[i].center, 0.1, 0.0);
-		drawSnowflakeArm(snowflakes[i].center, -0.1, 0.0);
-		drawSnowflakeArm(snowflakes[i].center, 0.0, 0.1);
-		drawSnowflakeArm(snowflakes[i].center, 0.0, -0.1);
+		GLfloat xRot = (rand() % 360) - 180;
+		GLfloat yRot = (rand() % 360) - 180;
+		GLfloat zRot = (rand() % 360) - 180;
 
-		drawSnowflakeArm(snowflakes[i].center, 0.06, 0.06);
-		drawSnowflakeArm(snowflakes[i].center, 0.06, -0.06);
-		drawSnowflakeArm(snowflakes[i].center, -0.06, -0.06);
-		drawSnowflakeArm(snowflakes[i].center, -0.06, 0.06);
+		// rotate snowflakes to give them a sense of "wobble" as they fall
+		glTranslatef(snowflakes[i].center.vertex_x, snowflakes[i].center.vertex_y, snowflakes[i].center.vertex_z);
+		glRotatef(xRot, 1.0, 0.0, 0.0);
+		glRotatef(yRot, 0.0, 1.0, 0.0);
+		glRotatef(zRot, 0.0, 0.0, 1.0);
+		glTranslatef(-snowflakes[i].center.vertex_x, -snowflakes[i].center.vertex_y, -snowflakes[i].center.vertex_z);
+
+		drawSnowflakeArm(snowflakes[i].center, 0.2, 0.0);
+		drawSnowflakeArm(snowflakes[i].center, -0.2, 0.0);
+		drawSnowflakeArm(snowflakes[i].center, 0.0, 0.2);
+		drawSnowflakeArm(snowflakes[i].center, 0.0, -0.2);
+
+		drawSnowflakeArm(snowflakes[i].center, 0.12, 0.12);
+		drawSnowflakeArm(snowflakes[i].center, 0.12, -0.12);
+		drawSnowflakeArm(snowflakes[i].center, -0.12, -0.12);
+		drawSnowflakeArm(snowflakes[i].center, -0.12, 0.12);
 
 		glEnd();
+		glPopMatrix();
 
 		snowflakes[i].center.vertex_y -= 0.1;
 
@@ -570,12 +584,11 @@ void drawRaindrops() {
 	glPopMatrix();
 }
 
-void drawInfoText() {
+void drawInfoText(GLfloat xPos, GLfloat yPos, GLfloat zPos) {
 	setMaterialProperties(color_array_green, color_array_green, color_array_green, 200);
 	GLint lineLength = 18;
-	GLfloat letterWidth = 0.2;
-	GLfloat letterHeight = 0.3;
-	GLfloat startingX = cameraPosition[0] - letterWidth * (lineLength / 2);
+	GLfloat letterWidth = 0.5;
+	GLfloat letterHeight = 0.7;
 
 	char text[5][18] = {
 		"------------------",
@@ -589,12 +602,23 @@ void drawInfoText() {
 	setNumericalText(text[2], planeForwardDelta, 135);
 	setNumericalText(text[3], cameraPosition[1] + planeToCameraOffset[1], 15);
 	
+	GLfloat startPositionX = xPos;
+	GLfloat startPositionZ = zPos;
+
+	yPos = yPos + 10;
+
 	int i, j;
 	for (i = 0; i < 5; i++) {
 		for (j = 0; j < 18; j++) {
-			glRasterPos3f(startingX + (letterWidth * j), cameraPosition[1] + 2 + (letterHeight * i), cameraPosition[2] - 20);
+			xPos = xPos + (cos(planeYawAngle * M_PI / 180.0) * letterWidth);
+			zPos = zPos + (sin(planeYawAngle * M_PI / 180.0) * letterWidth);
+
+			glRasterPos3f(xPos, yPos + 2 + (letterHeight * i), zPos);
 			glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, text[i][j]);
 		}
+
+		xPos = startPositionX;
+		zPos = startPositionZ;
 	}
 }
 
@@ -657,9 +681,14 @@ void myDisplay() {
 
 	glPopMatrix();
 
+	glPushMatrix();
+	drawInfoText(cameraFocusPoint[0], cameraFocusPoint[1], cameraFocusPoint[2]);
+	glPopMatrix();
+
 	glPushMatrix();	
 
 	glTranslatef(cameraPosition[0] + planeToCameraOffset[0], cameraPosition[1] + planeToCameraOffset[1], cameraPosition[2] + planeToCameraOffset[2]);
+	
 	glRotatef(270.0, 0.0, 1.0, 0.0);
 	glRotatef(-planeYawAngle, 0.0, 1.0, 0.0);
 	glRotatef(planeRollDeg, 1.0, 0.0, 0.0);
@@ -685,8 +714,6 @@ void myDisplay() {
 
 	glPopMatrix();
 
-	drawInfoText();
-
 	glutSwapBuffers(); // send drawing information to OpenGL
 }
 
@@ -694,7 +721,7 @@ void myIdle() {
 	double centreMouseBoundary = windowWidth / 2;
 	
 	GLfloat xOffsetPlane = (centreMouseBoundary - oldMouseX) / windowWidth;
-	planeYawAngle -= xOffsetPlane / (planeForwardDelta * 10);
+	planeYawAngle -= xOffsetPlane / (planeForwardDelta * 5);
 
 	GLfloat xOffsetCamera = sin(planeYawAngle * M_PI / 180.0) * planeForwardDelta;
 	GLfloat zOffsetCamera = cos(planeYawAngle * M_PI / 180.0) * planeForwardDelta;

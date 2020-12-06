@@ -11,8 +11,8 @@
 #define MOUNTAIN_START_LEVEL 6
 #define MOUNTAIN_RESOLUTION 64
 
-#define MAX_SNOWFLAKES 1500
-#define MAX_RAINDROPS 1500
+#define MAX_SNOWFLAKES 2000
+#define MAX_RAINDROPS 2000
 
 #define SCENE_RADIUS 428
 #define SCENE_HEIGHT 385
@@ -199,9 +199,9 @@ void generateRainDrops() {
 	int i, j;
 	for (i = 0; i < MAX_RAINDROPS; i++) {
 		// same logic as for snowflakes - set initial height and values for bottom of raindrop
-		raindrops[i].bottom.vertex_x = (rand() % (401)) - 200;
+		raindrops[i].bottom.vertex_x = (rand() % (2 * SCENE_RADIUS)) - SCENE_RADIUS;
 		raindrops[i].bottom.vertex_y = (rand() % 200) + 20;
-		raindrops[i].bottom.vertex_z = (rand() % (401)) - 200;
+		raindrops[i].bottom.vertex_z = (rand() % (2 * SCENE_RADIUS)) - SCENE_RADIUS;
 
 		raindrops[i].initialHeight = raindrops[i].bottom.vertex_y;
 
