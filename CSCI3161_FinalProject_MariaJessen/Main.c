@@ -70,6 +70,8 @@ GLfloat planeYawAngle = 0.0;
 GLfloat oldMouseX = -1;
 GLfloat centreMouseBoundary = 400;
 
+GLfloat snowFogDensity = 0.0;
+
 void setMaterialProperties(GLfloat diffuse[4], GLfloat ambient[4], GLfloat specular[4], GLfloat shine) {
 	glMaterialfv(GL_FRONT, GL_AMBIENT, ambient);
 	glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse);
@@ -413,14 +415,17 @@ void drawWater(int quadricDrawingStyle) {
 	gluQuadricTexture(diskPtr, GL_TRUE);
 
 	glEnable(GL_TEXTURE_2D);
-	setMaterialProperties(color_array_white, color_array_white, color_array_white, 100);
+
+	setMaterialProperties(color_array_white_water, color_array_white_water, color_array_white_water, 100);
 	glRotatef(270.0, 1.0, 0.0, 0.0);
 
 	if (fogMode) {
 		if (color_array_white_scene[3] > 0)
-			drawFog(0.005, color_array_rose_transparent);
-		else
-			drawFog(0.005, color_array_grey_transparent);
+			drawFog(0.005 * color_array_white_scene[3], color_array_rose_transparent);
+
+		if (snowFogDensity > 0) {
+			drawFog(snowFogDensity, color_array_grey_transparent);
+		}
 	}
 
 	glBindTexture(GL_TEXTURE_2D, seaTextureID);
@@ -751,6 +756,12 @@ void myIdle() {
 
 	if (showSnow || showRain) {
 		color_array_white_scene[3] = color_array_white_scene[3] <= 0.0 ? 0.0 : (color_array_white_scene[3] - 0.01);
+		snowFogDensity = snowFogDensity >= 0.006 ? 0.006 : (snowFogDensity + 0.0001);
+
+		int i;
+		for (i = 0; i < 3; i++) {
+			color_array_white_water[i] = color_array_white_water[i] <= 0.4 ? 0.4 : color_array_white_water[i] - 0.01;
+		}
 	}
 
 	else if (transitionSkyToClear) {
@@ -760,6 +771,13 @@ void myIdle() {
 		}
 		else {
 			color_array_white_scene[3] += 0.01;
+
+			snowFogDensity = snowFogDensity <= 0.0 ? 0.0 : (snowFogDensity - 0.0001);
+
+			int i;
+			for (i = 0; i < 3; i++) {
+				color_array_white_water[i] = color_array_white_water[i] >= 1.0 ? 1.0 : color_array_white_water[i] + 0.01;
+			}
 		}
 	}
 

@@ -30,6 +30,7 @@ GLfloat color_array_grey_transparent[4] = COLOR_GREY_TRANSPARENT;
 GLfloat color_array_dark_green[4] = COLOR_DARK_GREEN;
 
 GLfloat color_array_white_scene[4] = COLOR_WHITE;
+GLfloat color_array_white_water[4] = COLOR_WHITE;
 
 GLfloat color_raindrop_bottom[4] = COLOR_LIGHT_BLUE_TRANSLUCENT;
 GLfloat color_raindrop_top[4] = COLOR_LIGHT_BLUE_TRANSPARENT;
