@@ -211,3 +211,14 @@ void generateRainDrops() {
 		resetRippleValues(&raindrops[i].rippleRadius, &raindrops[i].rippleOpacity, &raindrops[i].showRipple);
 	}
 }
+
+void updateRippleRadius(GLfloat* radius, GLfloat* opacity, GLboolean* showRipple) {
+	*radius += 0.01;
+	*opacity -= 0.01;
+
+	if (*opacity <= 0.0) {
+		*radius = 0.0;
+		*opacity = 0.5;
+		*showRipple = GL_FALSE;
+	}
+}

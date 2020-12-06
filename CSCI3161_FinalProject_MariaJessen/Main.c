@@ -21,7 +21,7 @@
 int windowWidth = 800;
 int windowHeight = 800;
 
-GLenum polygonMode = GL_FILL;
+GLenum polygonMode = GL_LINE;
 
 const GLint gridSize = 500;
 const GLfloat gridSectionWidth = 2.0;
@@ -34,7 +34,7 @@ GLfloat sceneRotationDelta = 0.0;
 
 GLfloat planeToCameraOffset[3] = { 0.0, -1.0, -2.0 };
 
-GLfloat planeForwardDelta = 0;//SPEED_INCREMENT;
+GLfloat planeForwardDelta = SPEED_INCREMENT;
 GLfloat planeTravel = 0.0;
 
 GLfloat planeRollDeg = 0.0;
@@ -64,6 +64,10 @@ GLint planeShine = 50;
 int specialPart = 1;
 
 GLfloat snowflakeFallDelta = 0.0;
+
+GLfloat planeYawAngle = 0.0;
+
+GLfloat oldMouseX = -1;
 
 void setMaterialProperties(GLfloat diffuse[4], GLfloat ambient[4], GLfloat specular[4], GLfloat shine) {
 	glMaterialfv(GL_FRONT, GL_AMBIENT, ambient);
@@ -625,13 +629,13 @@ void myDisplay() {
 				cameraFocusPoint[0], cameraFocusPoint[1], cameraFocusPoint[2],
 				cameraUpVector[0], cameraUpVector[1], cameraUpVector[2]);
 	
-	glPushMatrix();
+	glPointSize(20.0);
+	setMaterialProperties(color_array_red, color_array_red, color_array_red, 50);
+	glBegin(GL_POINTS);
+	glVertex3fv(cameraFocusPoint);
+	glEnd();
 
-	// Rotate the scene (except for the plane and camera) to simulate plane turns
-	glTranslatef(cameraPosition[0], cameraPosition[1], cameraPosition[2]);
-	glTranslatef(0.0, 0.0, planeTravel);
-	glRotatef(sceneRotationDeg, 0.0, 1.0, 0.0);
-	glTranslatef(-cameraPosition[0], -cameraPosition[1], -(cameraPosition[2]));
+	glPushMatrix();
 
 	if (simpleSceneMode) {
 		drawAxes();
@@ -663,6 +667,7 @@ void myDisplay() {
 
 	glTranslatef(cameraPosition[0] + planeToCameraOffset[0], cameraPosition[1] + planeToCameraOffset[1], cameraPosition[2] + planeToCameraOffset[2]);
 	glRotatef(270.0, 0.0, 1.0, 0.0);
+	glRotatef(planeRollDeg, 0.0, 1.0, 0.0);
 	glRotatef(planeRollDeg, 1.0, 0.0, 0.0);
 	glScalef(0.5, 0.5, 0.5);
 	if (showSnow) drawFog(snowDensityPlane, color_array_white);
@@ -690,35 +695,35 @@ void myDisplay() {
 	glutSwapBuffers(); // send drawing information to OpenGL
 }
 
-void updateRippleRadius(GLfloat * radius, GLfloat * opacity, GLboolean * showRipple) {
-	*radius += 0.01;
-	*opacity -= 0.01;
-
-	if (*opacity <= 0.0) {
-		*radius = 0.0;
-		*opacity = 0.5;
-		*showRipple = GL_FALSE;
-	}
-}
-
 void myIdle() {
+	GLfloat xOffset = sin(planeYawAngle * M_PI / 180.0) * planeForwardDelta;
+	GLfloat zOffset = cos(planeYawAngle * M_PI / 180.0) * planeForwardDelta;
+
+	cameraPosition[0] += xOffset;
+	cameraPosition[2] -= zOffset;
+
+	planeToCameraOffset[0] = sin(planeYawAngle * M_PI / 180.0) * 2.0;
+	planeToCameraOffset[2] = cos(planeYawAngle * M_PI / 180.0) * -2.0;
+
+	//printf("PLANE OFFSET %f\n", planeToCameraOffset[2]);
+
+	cameraFocusPoint[0] = cameraPosition[0] + (tan(planeYawAngle * M_PI / 180.0) * 50);
+	cameraFocusPoint[2] = cameraPosition[2] - 50;
+
+	printf("X: %f Z: %f\n", xOffset, zOffset);
+
 	propellerRotationDeg += 15.0;
 
 	double centreMouseBoundary = windowWidth / 2;
 
 	switch (currentPlaneDirection) {
 	case DIRECTION_GO_LEFT:
-		if (planeRollDeg < 45.0) planeRollDeg -= sceneRotationDelta;
-
-		sceneRotationDeg += sceneRotationDelta;
+		if (planeRollDeg < 45.0) planeRollDeg = -planeYawAngle;
 		break;
 	case DIRECTION_GO_RIGHT:
-		if (planeRollDeg > -45.0) planeRollDeg -= sceneRotationDelta;
-		 
-		sceneRotationDeg += sceneRotationDelta;
+		if (planeRollDeg > -45.0) planeRollDeg = -planeYawAngle;
 		break;
 	case DIRECTION_GO_STRAIGHT:
-
 		if (planeRollDeg < 0.0) {
 			planeRollDeg += 1.0;
 		}
@@ -859,21 +864,23 @@ void mySpecialKeyboard(int key, int x, int y) {
 }
 
 void myPassiveMotion(int x, int y) {
-	printf("MOUSE POSITION: %d, %d\n", x, y);
-
-	double centreMouseBoundary = (windowWidth / 2);
-
-	if (x > (centreMouseBoundary + 5)) {
-		currentPlaneDirection = DIRECTION_GO_RIGHT;
-		sceneRotationDelta = (x - centreMouseBoundary) / windowWidth * 10;
+	if (oldMouseX == -1) {
+		oldMouseX = x;
 	}
-	else if (x < (centreMouseBoundary - 5)) {
-		currentPlaneDirection = DIRECTION_GO_LEFT;
-		sceneRotationDelta = (x - centreMouseBoundary) / windowWidth * 10;
-	}
-	else {
-		currentPlaneDirection = DIRECTION_GO_STRAIGHT;
-		sceneRotationDelta = 0.0;
+
+	if (oldMouseX != x) {
+		double centreMouseBoundary = (windowWidth / 2);
+
+		planeYawAngle = (x - centreMouseBoundary) / centreMouseBoundary * 100;
+
+		if (x != centreMouseBoundary) {
+			currentPlaneDirection = x > centreMouseBoundary ? DIRECTION_GO_RIGHT : DIRECTION_GO_LEFT;
+		}
+		else {
+			currentPlaneDirection = DIRECTION_GO_STRAIGHT;
+		}
+
+		printf("MOUSE X: %d\tANGLE: %f\n", x, planeYawAngle);
 	}
 }
 
