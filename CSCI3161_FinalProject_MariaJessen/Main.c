@@ -1,3 +1,12 @@
+/*
+
+CSCI3161 FINAL PROJECT
+MARIA JESSEN B00743170
+
+Flight simulator. Allows user to travel through a scene using the mouse and keyboard. 
+
+*/
+
 #include <freeglut.h>
 #include <stdio.h>
 #include <string.h>
@@ -186,16 +195,15 @@ void loadPlanePoints(char filename[], struct Point* points, struct FaceNode* fac
 
 			printf("(%d) LOADING %s\n", partCount, partName);
 
-			faces[partCount] = NULL; //malloc(sizeof(struct FaceNode));
+			faces[partCount] = NULL;
 		}
 		else if (typeChar == 'f') {
 			int pointIndex = 0;
 			int scanned = fscanf_s(planeFile, "%d", &pointIndex);
 
-			struct PointNode* list = NULL; //malloc(sizeof(struct PointNode));
+			struct PointNode* list = NULL;
 
 			while (scanned != 0 && scanned != EOF) {
-				//printf("%d ", pointIndex);
 				struct Point point = points[pointIndex];
 
 				if (partCount == 32) { // hub1 (left)
@@ -209,14 +217,10 @@ void loadPlanePoints(char filename[], struct Point* points, struct FaceNode* fac
 				scanned = fscanf_s(planeFile, "%d", &pointIndex);
 			}
 
-			//printf("\n");
-
 			GLfloat color[4] = { 1.0, 1.0, 1.0, 1.0 };
 			faces[partCount] = insertFace(faces[partCount], list, color);
 		}
 
-		//typeChar = fgetc(planeFile);
-		//printf("NEXT CHAR: %c\n", typeChar);
 		linesRead++;
 		typeCharScanned = fscanf_s(planeFile, "%c ", &typeChar, 2);
 	}
@@ -735,7 +739,7 @@ void myIdle() {
 	double centreMouseBoundary = windowWidth / 2;
 	
 	GLfloat xOffsetPlane = (centreMouseBoundary - oldMouseX) / windowWidth;
-	planeYawAngle -= xOffsetPlane / (planeForwardDelta * 5);
+	planeYawAngle -= xOffsetPlane / (planeForwardDelta * 2);
 
 	GLfloat xOffsetCamera = sin(planeYawAngle * M_PI / 180.0) * planeForwardDelta;
 	GLfloat zOffsetCamera = cos(planeYawAngle * M_PI / 180.0) * planeForwardDelta;
@@ -815,7 +819,6 @@ void myIdle() {
 }
 
 void myKeyboard(unsigned char key, int x, int y) {
-	printf("PRESSED %c\n", key);
 	switch (key) {
 	case 'w': // toggle line/fill mode for drawing polygons
 		polygonMode = polygonMode == GL_LINE ? GL_FILL : GL_LINE;
@@ -874,7 +877,6 @@ void myKeyboard(unsigned char key, int x, int y) {
 void mySpecialKeyboard(int key, int x, int y) {
 	const GLfloat verticalDelta = 0.2;
 
-	printf("Pressed: %d\n", key);
 	switch (key) {
 	case KEY_PAGE_UP: // increase forward speed
 		planeForwardDelta += SPEED_INCREMENT;
@@ -998,6 +1000,27 @@ void initializeGL() {
 	initAltSkyTexture();
 }
 
+void printKeybindings() {
+	printf("Scene Controls\n------------------\n");
+	printf("f: toggle fullscreen\n");
+	printf("g : toggle fog\n");
+	printf("m : toggle mountains\n");
+	printf("t : toggle mountain texture\n");
+	printf("s : toggle sea & sky\n");
+	printf("w : toggle wire frame\n");
+	printf("x : toggle snow mode\n");
+	printf("r : toggle rain mode\n");
+	printf("q : quit\n\n");
+	printf("Camera Controls\n");
+	printf("---------------- -\n");
+	printf("Page Up : faster\n");
+	printf("Page Down : slower\n");
+	printf("Up    Arrow : move up\n");
+	printf("Down  Arrow : move down\n");
+	printf("Mouse Right : move right\n");
+	printf("Mouse Left : move left");
+}
+
 void main(int argc, char** argv) {
 	srand(time(0));
 	loadPlanePoints("cessna.txt", &planePoints[0], planeFaceLists, CESSNA_POINT_COUNT);
@@ -1024,6 +1047,8 @@ void main(int argc, char** argv) {
 
 	generateSnowFlakes();
 	generateRainDrops();
+
+	printKeybindings();
 
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
