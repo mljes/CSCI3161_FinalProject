@@ -68,6 +68,7 @@ GLfloat snowflakeFallDelta = 0.0;
 GLfloat planeYawAngle = 0.0;
 
 GLfloat oldMouseX = -1;
+GLfloat centreMouseBoundary = 400;
 
 void setMaterialProperties(GLfloat diffuse[4], GLfloat ambient[4], GLfloat specular[4], GLfloat shine) {
 	glMaterialfv(GL_FRONT, GL_AMBIENT, ambient);
@@ -336,7 +337,6 @@ void drawGrid() {
 
 	int i, j;
 
-	//printf("%d, %d\n", lowerLimit, upperLimit);
 	GLfloat color[4] = COLOR_LIGHT_PURPLE;
 	color[3] = 0.5;
 ;
@@ -667,9 +667,10 @@ void myDisplay() {
 
 	glTranslatef(cameraPosition[0] + planeToCameraOffset[0], cameraPosition[1] + planeToCameraOffset[1], cameraPosition[2] + planeToCameraOffset[2]);
 	glRotatef(270.0, 0.0, 1.0, 0.0);
-	glRotatef(planeRollDeg, 0.0, 1.0, 0.0);
+	glRotatef(-planeYawAngle, 0.0, 1.0, 0.0);
 	glRotatef(planeRollDeg, 1.0, 0.0, 0.0);
 	glScalef(0.5, 0.5, 0.5);
+
 	if (showSnow) drawFog(snowDensityPlane, color_array_white);
 	drawCessna();
 	glDisable(GL_FOG);
@@ -696,45 +697,31 @@ void myDisplay() {
 }
 
 void myIdle() {
-	GLfloat xOffset = sin(planeYawAngle * M_PI / 180.0) * planeForwardDelta;
-	GLfloat zOffset = cos(planeYawAngle * M_PI / 180.0) * planeForwardDelta;
+	GLfloat xOffsetPlane = (centreMouseBoundary - oldMouseX) / windowWidth;
+	planeYawAngle -= xOffsetPlane / (planeForwardDelta * 10);
 
-	cameraPosition[0] += xOffset;
-	cameraPosition[2] -= zOffset;
+	printf("NEW YAW: %f\n", planeYawAngle);
+
+	GLfloat xOffsetCamera = sin(planeYawAngle * M_PI / 180.0) * planeForwardDelta;
+	GLfloat zOffsetCamera = cos(planeYawAngle * M_PI / 180.0) * planeForwardDelta;
+
+	cameraPosition[0] += xOffsetCamera;
+	cameraPosition[2] -= zOffsetCamera;
 
 	planeToCameraOffset[0] = sin(planeYawAngle * M_PI / 180.0) * 2.0;
 	planeToCameraOffset[2] = cos(planeYawAngle * M_PI / 180.0) * -2.0;
 
-	//printf("PLANE OFFSET %f\n", planeToCameraOffset[2]);
+	planeRollDeg = abs(planeYawAngle) < 45.0 ? -planeYawAngle : planeRollDeg;
 
-	cameraFocusPoint[0] = cameraPosition[0] + (tan(planeYawAngle * M_PI / 180.0) * 50);
-	cameraFocusPoint[2] = cameraPosition[2] - 50;
+	cameraFocusPoint[0] = cameraPosition[0] + sin(planeYawAngle * M_PI / 180.0) * 50;
+	cameraFocusPoint[2] = cameraPosition[2] + cos(planeYawAngle * M_PI / 180.0) * -50;
 
-	printf("X: %f Z: %f\n", xOffset, zOffset);
+	printf("CAMERA: X: %f X: %f\n", cameraPosition[0], cameraPosition[2]);
+	printf("FOCUS: X: %f Z: %f\n", cameraFocusPoint[0], cameraFocusPoint[2]);
 
 	propellerRotationDeg += 15.0;
 
 	double centreMouseBoundary = windowWidth / 2;
-
-	switch (currentPlaneDirection) {
-	case DIRECTION_GO_LEFT:
-		if (planeRollDeg < 45.0) planeRollDeg = -planeYawAngle;
-		break;
-	case DIRECTION_GO_RIGHT:
-		if (planeRollDeg > -45.0) planeRollDeg = -planeYawAngle;
-		break;
-	case DIRECTION_GO_STRAIGHT:
-		if (planeRollDeg < 0.0) {
-			planeRollDeg += 1.0;
-		}
-		else if (planeRollDeg > 0.0) {
-			planeRollDeg -= 1.0;
-		}
-
-		planeRollDeg = abs(planeRollDeg) < 1.0 ? 0.0 : planeRollDeg;
-
-		break;
-	}
 
 	if (showSnow || showRain) {
 		color_array_white_scene[3] = color_array_white_scene[3] <= 0.0 ? 0.0 : (color_array_white_scene[3] - 0.01);
@@ -864,24 +851,19 @@ void mySpecialKeyboard(int key, int x, int y) {
 }
 
 void myPassiveMotion(int x, int y) {
-	if (oldMouseX == -1) {
-		oldMouseX = x;
+	oldMouseX = x;
+
+	centreMouseBoundary = (windowWidth / 2);
+
+	if (x != centreMouseBoundary) {
+		currentPlaneDirection = x > centreMouseBoundary ? DIRECTION_GO_RIGHT : DIRECTION_GO_LEFT;
+	}
+	else {
+		currentPlaneDirection = DIRECTION_GO_STRAIGHT;
 	}
 
-	if (oldMouseX != x) {
-		double centreMouseBoundary = (windowWidth / 2);
-
-		planeYawAngle = (x - centreMouseBoundary) / centreMouseBoundary * 100;
-
-		if (x != centreMouseBoundary) {
-			currentPlaneDirection = x > centreMouseBoundary ? DIRECTION_GO_RIGHT : DIRECTION_GO_LEFT;
-		}
-		else {
-			currentPlaneDirection = DIRECTION_GO_STRAIGHT;
-		}
-
-		printf("MOUSE X: %d\tANGLE: %f\n", x, planeYawAngle);
-	}
+	printf("MOUSE X: %d\tANGLE: %f\n", x, planeYawAngle);
+	
 }
 
 void myReshape(int newWidth, int newHeight) {
