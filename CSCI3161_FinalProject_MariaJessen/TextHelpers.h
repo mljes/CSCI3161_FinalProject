@@ -1,6 +1,6 @@
 #pragma once
 char weatherTextSnow[] = "SNOW ";
-char weatherTextClear[] = "CLEAR";
+char weatherTextClear[] = "SUN  ";
 char weatherTextRain[] = "RAIN ";
 
 void setWeatherText(char line[18], GLboolean showSnow, GLboolean showRain) {

@@ -27,8 +27,11 @@ Down  Arrow : move down
 Mouse Right : move right
 Mouse Left : move left
 ```
-  
+ 
 ### Plane Motion
+The plane and propellers are loaded from text files. Their vertexes, normals and faces are stored using array and LinkedLists. The propellers are positioned by finding the center
+point of each hub (the part of the plane where the propellers attach) and translating the propeller objects to those points.
+
 The plane remains in constant forward motion. Users control the yaw of the plane (turning) by moving the mouse in the direction they want to turn.
 Plane direction is determined trigonometrically using a function that treats places the plane's current and future positions at opposite ends of the hypotenuse of a right triangle and 
 determines the X- and Z-offsets of the camera position using an angle produced from the mouse's x-position on the screen. The plane's position in relation to the camera and the camera's 
@@ -87,3 +90,9 @@ The raindrop's height is then reset to its original height so that it can fall a
 The snow mode is very similar to the rain mode (snowflakes fall in the same way, reset in the same way and cause ripples on the water in the same way) but are drawn differently.
 When first generated, the snowflakes are stored as a center point, which the then used to draw the arms of the snowflake. 
 When drawn, the snowflakes rotate so that the appear to wobble and dance as they drift down.
+
+In addition, when snowflakes begin reaching the water, fog will begin to obscure the plane and mountain to simulate the accumulation of snow. The fog fades in slowly to make it look
+like the snow builds up gradually.
+
+## Sources
+Alternate Sky Image: http://www.benkyoustudio.com/Textures/TexturesSnowAndIce/
