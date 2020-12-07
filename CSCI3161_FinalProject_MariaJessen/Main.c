@@ -1170,6 +1170,7 @@ void printKeybindings() {
 	printf("t : toggle mountain texture\n");
 	printf("s : toggle sea & sky\n");
 	printf("w : toggle wire frame\n");
+	printf("c : toggle cloud mode\n");
 	printf("x : toggle snow mode\n");
 	printf("r : toggle rain mode\n");
 	printf("q : quit\n\n");
