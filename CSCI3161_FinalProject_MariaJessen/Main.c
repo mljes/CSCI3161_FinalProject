@@ -969,9 +969,11 @@ void myKeyboard(unsigned char key, int x, int y) {
 	case 'x': // toggle snow mode
 		showSnow = !showSnow;
 		if (showSnow) {
-			showRain = GL_FALSE; // don't want snow and rain at the same time		
+			showRain = GL_FALSE; // don't want snow and rain at the same time	
+			resetRaindropHeights();
 		}
 		else { // turn off snow
+			resetSnowflakeHeights();
 			snowIsAccumulating = GL_FALSE;
 			snowDensityMountains = 0.0;
 			snowDensityPlane = 0.0;
@@ -982,8 +984,10 @@ void myKeyboard(unsigned char key, int x, int y) {
 		showRain = !showRain;
 		if (showRain) {
 			showSnow = GL_FALSE; // don't want snow and rain at the same time
+			resetSnowflakeHeights();
 		}
 		else { // turn off rain
+			resetRaindropHeights();
 			GLint mountainShine = 0;
 			GLint planeShine = 50;
 			transitionSkyToClear = GL_TRUE; // start transitioning back to regular sky
