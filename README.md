@@ -66,19 +66,22 @@ Mountains are scaled and translated randomly when drawn on the scene.
 The information text displays an arbitrary speed and altitude. The speed is determined using amount the plane moves forward in each frame and a factor to make the speed appear more "realistic".
 The altitude is determined in similar way but using the height of the camera instead of the forward travel amount. 
   
-The information text also shows the current weather conditions, either "CLEAR", "RAIN" or "SNOW".
+The information text also shows the current weather conditions, either "CLEAR", "CLOUD", "RAIN" or "SNOW".
   
 The information text could not be placed simply: like the camera, plane and focal point, the text position has to be determined trigonometrically. It follows the same triangle scenario used to 
 position the plane, but uses the focal point as the initial position and adds offsets determined trigonometrically for each letter drawn. 
  
 ### Weather Modes
-Two weather modes exist in addition to the normal sunny scene: rain and snow.
+Three weather modes exist in addition to the normal sunny scene: cloud, rain and snow.
   
-When either mode is activated, the sky changes from bright to cloudy and grey. This effect is acheived by drawing another sky cylinder behind the original one and fading the original cylinder
+When any of these modes is activated, the sky changes from bright to cloudy and grey. This effect is acheived by drawing another sky cylinder behind the original one and fading the original cylinder
 out of view once the rain/snow mode is activated, thus making it look like the dark clouds have formed suddenly but not sharp or abruptly.
   
 The sea and sea fog colors also change to grey to look more stormy simulate low cloud cover.
  
+### Cloud Mode 
+The cloud mode just causes the sky to cloud over and the sea and sea fog to turn grey. There is no precipitation in cloud mode.
+
 #### Rain Mode
 The rain mode causes "raindrops" in the form of tiny, translucent line segments to be drawn and move down from the top of the scene. The raindrop values are generated and stored before the animation 
 loop starts, and are updated at each frame of the animation to make the raindrops fall.

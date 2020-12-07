@@ -56,6 +56,7 @@ GLboolean showSnow = GL_FALSE;              // indicates whether to draw snowfla
 GLboolean snowIsAccumulating = GL_FALSE;    // indicates whether to draw fog on mountains and plane to simulate snow accumulation
 GLboolean showRain = GL_FALSE;              // indicates whether to draw raindrops and show the alternate sky
 GLboolean transitionSkyToClear = GL_FALSE;  // indicates whether we are fading the regular sky back into view
+GLboolean cloudMode = GL_FALSE;             // indicates whether to show cloudy sky texture 
 
 // texture IDs for when we want to bind textures
 GLuint skyTextureID; 
@@ -519,7 +520,7 @@ void drawSky(int quadricDrawingStyle) {
 
 	glEnable(GL_TEXTURE_2D); // turn on texturing
 
-	if (showSnow || showRain || transitionSkyToClear) { // draw the alterate sky behind the regular one if we need it
+	if (showSnow || showRain || transitionSkyToClear || cloudMode) { // draw the alterate sky behind the regular one if we need it
 		setMaterialProperties(color_array_white, color_array_white, color_array_white, 100);
 		glBindTexture(GL_TEXTURE_2D, altSkyTextureID); // use alternate sky texture
 		gluCylinder(cylinderPtr, SCENE_RADIUS + 1, SCENE_RADIUS + 1, SCENE_HEIGHT, 100, 200); // draw cylinder
@@ -712,7 +713,7 @@ void drawInfoText(GLfloat xPos, GLfloat yPos, GLfloat zPos) {
 	};
 
 	// set the text values 
-	setWeatherText(text[1], showSnow, showRain);
+	setWeatherText(text[1], showSnow, showRain, cloudMode);
 	setNumericalText(text[2], planeForwardDelta, 135);
 	setNumericalText(text[3], cameraPosition[1] + planeToCameraOffset[1], 15);
 	
@@ -875,7 +876,7 @@ void myIdle() {
 
 	propellerRotationDeg += 15.0; // increase rotation of propeller
 
-	if (showSnow || showRain) { // fade out the regular sky if we're in snow/rain mode
+	if (showSnow || showRain || cloudMode) { // fade out the regular sky if we're in snow/rain mode
 		color_array_white_scene[3] = color_array_white_scene[3] <= 0.0 ? 0.0 : (color_array_white_scene[3] - 0.01);
 		snowFogDensity = snowFogDensity >= 0.006 ? 0.006 : (snowFogDensity + 0.0001); // fade in the grey fog
 
@@ -965,6 +966,9 @@ void myKeyboard(unsigned char key, int x, int y) {
 		break;
 	case 't': // toggle texturing for mountains
 		mountainTexturedMode = !mountainTexturedMode;
+		break;
+	case 'c':
+		cloudMode = !cloudMode;
 		break;
 	case 'x': // toggle snow mode
 		showSnow = !showSnow;

@@ -9,9 +9,10 @@ Functions to aid drawing text
 */
 
 // strings for different weather conditions
-char weatherTextSnow[] = "SNOW ";
+char weatherTextSnow[] =  "SNOW ";
 char weatherTextClear[] = "SUN  ";
-char weatherTextRain[] = "RAIN ";
+char weatherTextRain[] =  "RAIN ";
+char weatherTextCloud[] = "CLOUD";
 
 /// <summary>
 /// Set the current weather condiions indicator based on weather mode enabled
@@ -19,7 +20,7 @@ char weatherTextRain[] = "RAIN ";
 /// <param name="line"></param>
 /// <param name="showSnow"></param>
 /// <param name="showRain"></param>
-void setWeatherText(char line[18], GLboolean showSnow, GLboolean showRain) {
+void setWeatherText(char line[18], GLboolean showSnow, GLboolean showRain, GLboolean showCloud) {
 	int i;
 	for (i = 0; i < 5; i++) {
 		if (showSnow) {
@@ -27,6 +28,9 @@ void setWeatherText(char line[18], GLboolean showSnow, GLboolean showRain) {
 		}
 		else if (showRain) {
 			line[i + 10] = weatherTextRain[i];
+		}
+		else if (showCloud) {
+			line[i + 10] = weatherTextCloud[i];
 		}
 		else {
 			line[i + 10] = weatherTextClear[i];
