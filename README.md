@@ -3,7 +3,9 @@ Maria Jessen B00743170
 
 __HEY__ - Are you a current CSCI3161 student? Were you assigned this _exact_ project too?  
 __STOP!__ Plagiarism will get you nowhere! It's not worth it! Please take the time to develop your own solution. Do not copy mine! They check GitHub!
-
+  
+..._anyways_... 
+   
 Allows the user to "fly" through a scene, controlling the camera/plane with mouse motions and keyboard entries. 
 
 ![Demo of gameplay](demo.gif)
