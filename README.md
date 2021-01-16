@@ -2,7 +2,9 @@
 Maria Jessen B00743170
   
 Allows the user to "fly" through a scene, controlling the camera/plane with mouse motions and keyboard entries. 
-  
+
+![Demo of gameplay](demo.gif)
+
 ## Basic Functionality
 ### Controls Overview
 ```
